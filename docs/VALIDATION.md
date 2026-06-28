@@ -53,11 +53,12 @@ python scripts/audit_evidence.py
 ```
 
 ## Scope & known limits (carry into later phases)
-1. **Algorithm tests only — HF integration now smoke-tested separately.** The 49 tests don't touch `kv_cache.py`; `scripts/instrument_smoke.py` (via `tqsec.instrument`) now exercises the `DynamicLayer` update path on CPU + GPU. **Finding: the vendored `kv_cache.py` is CPU-only** — it does `states.numpy()` and returns recon without restoring the device, so it crashes for GPU models. `tqsec.instrument.InstrumentedTurboQuantLayer` handles this; the *non-instrumented* path (e.g. T1 quality runs) needs the same `.cpu()`/`.to(device)` shim on Leonardo GPUs.
+1. **Algorithm tests only — HF integration now smoke-tested separately.** The 49 tests don't touch `kv_cache.py`; `scripts/instrument_smoke.py` (via `tqsec.instrument`) now exercises the `DynamicLayer` update path on CPU + GPU. **Finding: the vendored `kv_cache.py` is CPU-only** — it does `states.numpy()` and returns recon without restoring the device, so it crashes for GPU models. `tqsec.instrument.InstrumentedTurboQuantLayer` handles this; the *non-instrumented* path (e.g. T1 quality runs) needs the same `.cpu()`/`.to(device)` shim on Leonardo GPUs. **Update:** the full `model.generate` + quant-cache path is now validated on a real 30-layer model (`scripts/benchmarks_smoke.py`) — FP-KV, TurboQuant, and INT all run through `generate`.
 2. **NumPy, not PyTorch.** The HF path does a `.numpy()` round-trip → no autograd. T2's in-the-loop training needs a PyTorch differentiable twin (`tqsec/diff_twin.py`); freeze these centroids + the QJL matrix as the reference. (This corrects an earlier plan assumption that the research layer was PyTorch.)
 3. **No `-nc` policy.** scos-lab compresses every layer; the uncompressed-boundary-layer variants are added in `tqsec/quantizers.py`.
 4. **Counted, not measured, memory.** `kv_cache.py` counts compressed bits; a *measured* figure needs vLLM (deferred, T1-only).
 5. **Fidelity spectrum.** Upstream vLLM (#38479) is a WHT-rotation / uniform-value variant — "deployed reality," not this faithful object of study.
+6. **Env gotcha (transformers 4.57.3):** loading a tokenizer by repo id can 404 on a missing `additional_chat_templates` folder. Workaround (and Leonardo's default anyway): `snapshot_download` the model, then load locally with `HF_HUB_OFFLINE=1`.
 
 ## Fallback (not needed)
 scos-lab passed, so no fallback was used. Had it failed, the order was: tonbistudio/turboquant-pytorch (faithful PyTorch) → OmarHory/turboquant → AmesianX/TurboQuant.
