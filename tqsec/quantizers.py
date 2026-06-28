@@ -199,22 +199,28 @@ class QuantCacheLayer(DynamicLayer):
 
 
 def make_quant_cache(quantizer="turboquant", *, key_bits=4, value_bits=4, nc_layers=(),
-                     seed=42, mode="paper", recorder=None):
+                     seed=42, seed_fn=None, mode="paper", recorder=None):
     """A DynamicCache whose layers compress with `quantizer`, honoring the `-nc` policy.
 
-    nc_layers: iterable of layer indices left uncompressed (FP16). A single shared codec is
-    used across layers (one rotation/seed) — matching TurboQuant's reused-Π default; vary
-    `seed` per deployment for the secret-Π regime (see tqsec.pi_regime).
+    nc_layers: iterable of layer indices left uncompressed (FP16).
+    seed / seed_fn: the rotation (Π) seed. By default every layer uses `seed` (one reused Π,
+    matching TurboQuant's default). Pass `seed_fn(layer_idx) -> int` to vary Π per layer —
+    e.g. `tqsec.pi_regime.PiRegime.seed_for_layer` for the secret/per-deployment regime.
+    A fresh codec is built per layer from its seed (so per-layer Π differs when seeds do).
     """
     quantizer = quantizer.lower()
     nc_set = set(nc_layers)
-    codec = make_codec(quantizer, key_bits=key_bits, value_bits=value_bits, seed=seed, mode=mode)
+    if seed_fn is None:
+        def seed_fn(_idx):
+            return seed
     counter = {"n": 0}
 
     class _QLayer(QuantCacheLayer):
         def __init__(self):
             idx = counter["n"]
             counter["n"] += 1
+            codec = make_codec(quantizer, key_bits=key_bits, value_bits=value_bits,
+                               seed=seed_fn(idx), mode=mode)
             super().__init__(codec, layer_index=idx, is_nc=idx in nc_set, recorder=recorder)
 
     cache = DynamicCache.__new__(DynamicCache)
