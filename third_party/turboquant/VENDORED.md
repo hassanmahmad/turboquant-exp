@@ -25,3 +25,11 @@ object of study for the whole project (T1 quality, T2 backdoor, T3 leakage instr
   HF `DynamicLayer` integration with asymmetric K/V bits (`kv_cache.py`).
 - Not provided here (added in `tqsec/`): the `-nc` uncompressed-boundary-layer policy, a PyTorch
   differentiable twin for T2 (this layer is NumPy — no gradients), and the INT/KIVI/FP8 controls.
+
+## Known issues
+- **GPU:** `kv_cache.py` does `states.numpy()` and returns recon without restoring the device →
+  **CPU-only as written**. Use `tqsec.instrument` (restores device/dtype) or apply the same
+  `.cpu()` / `.to(device)` shim before running on Leonardo GPUs.
+- **Construction:** `DynamicCache(layer_class_to_replicate=...)` is rejected on transformers 4.57.3;
+  the working path is the `__new__` + manual-attribute form in `make_turboquant_cache` /
+  `tqsec.instrument.make_instrumented_cache`.

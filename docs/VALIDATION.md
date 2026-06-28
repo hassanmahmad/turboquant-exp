@@ -53,7 +53,7 @@ python scripts/audit_evidence.py
 ```
 
 ## Scope & known limits (carry into later phases)
-1. **Tests cover the algorithm only.** There is *no* test for the HF `DynamicLayer` integration in `kv_cache.py`. Exercise it during the 8B port.
+1. **Algorithm tests only — HF integration now smoke-tested separately.** The 49 tests don't touch `kv_cache.py`; `scripts/instrument_smoke.py` (via `tqsec.instrument`) now exercises the `DynamicLayer` update path on CPU + GPU. **Finding: the vendored `kv_cache.py` is CPU-only** — it does `states.numpy()` and returns recon without restoring the device, so it crashes for GPU models. `tqsec.instrument.InstrumentedTurboQuantLayer` handles this; the *non-instrumented* path (e.g. T1 quality runs) needs the same `.cpu()`/`.to(device)` shim on Leonardo GPUs.
 2. **NumPy, not PyTorch.** The HF path does a `.numpy()` round-trip → no autograd. T2's in-the-loop training needs a PyTorch differentiable twin (`tqsec/diff_twin.py`); freeze these centroids + the QJL matrix as the reference. (This corrects an earlier plan assumption that the research layer was PyTorch.)
 3. **No `-nc` policy.** scos-lab compresses every layer; the uncompressed-boundary-layer variants are added in `tqsec/quantizers.py`.
 4. **Counted, not measured, memory.** `kv_cache.py` counts compressed bits; a *measured* figure needs vLLM (deferred, T1-only).
