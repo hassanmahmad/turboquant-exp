@@ -39,9 +39,11 @@ docs/                    # VALIDATION.md (done); ARCHITECTURE / RUNBOOK / ETHICS
 ```
 
 ## Status
-**Phase 0 — Foundations.** Reuse gate **passed** (scos-lab faithful; `docs/VALIDATION.md`); research
-layer vendored. Next: port the salvage list (env/Slurm/config/metrics), build `tqsec/instrument.py`
-(the error map) and the control harness. See `PROJECT_PLAN.md` §5.
+**Phase 1 — shared foundation: code-complete.** Reuse gate passed (`docs/VALIDATION.md`); `tqsec/`
+built (`instrument` error map · `quantizers` {TurboQuant,INT,KIVI,FP8}+`-nc` · `pi_regime` · `metrics`
+· `benchmarks`) with 5 passing smoke tests; Leonardo scaffolding ready (`env/`, `slurm/`, `scripts/`,
+`t1_characterization/run_sanity.py`). **Next:** run the sanity benchmark on a real 7–8B model on
+Leonardo (**[docs/RUNBOOK.md](docs/RUNBOOK.md)**), then the T1/T2/T3 research. See `PROJECT_PLAN.md` §5.
 
 ## Quickstart (smoke)
 ```

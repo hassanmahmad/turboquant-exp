@@ -1,9 +1,12 @@
 # slurm/ — Leonardo batch jobs
 
-Batch-job definitions + dependency chaining for Leonardo. **Port from the predecessor**
-(`../turboquant-kv-cache-experiments/slurm/`) and adapt to the `tqsec` entrypoints and the new
-env-driven knobs (`QUANTIZER`, `KEY_BITS`, `VALUE_BITS`, `TQ_MODE`, `PI_REGIME`, `NC_LAYERS`).
+Run flow: **[../docs/RUNBOOK.md](../docs/RUNBOOK.md)**.
 
-Salvage: `slurm/*.slurm`, `scripts/submit_model_suite.sh` (job + dependency chaining).
+| Job | Purpose |
+|---|---|
+| `check_environment.slurm` | Validate the stack on a GPU node (`scripts/check_leonardo_env.py`). |
+| `sanity.slurm` | Run the Phase-1 sanity benchmark (`t1_characterization/run_sanity.py`) for one model. |
 
-Every experiment job should sweep the **control harness** (all quantizers) and **both Π regimes**.
+Submit a sanity run with `scripts/submit_sanity.sh <model_tag> <model_dir>`. Headers: account
+`IscrC_VisLLMs`, partition `boost_usr_prod`, `gpu:1`. Override `MODEL_ID`/`PROJECT_ROOT`/`VENV_DIR`
+via `--export`. Per-quantizer / per-bit sweeps and T2/T3 jobs get added as those tracks land.
