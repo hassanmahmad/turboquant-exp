@@ -11,9 +11,9 @@ Thin instrumentation + control layer over the vendored faithful TurboQuant
 | `config.py` | **done** | Env-driven `ExperimentConfig`: model, quantizer (`turboquant\|int\|kivi\|fp8\|fp16`), `mode`, K/V bits, `seed`, `pi_regime`, `nc_layers`. |
 | `instrument.py` | **done** | Error map via an instrumented HF cache: per layer/token/channel reconstruction error + Π / codes / QJL dumps. Findings per layer = channel-bias ratio, channel/token concentration, rel-err. Also restores device/dtype (fixes the CPU-only vendored layer). Smoke: `scripts/instrument_smoke.py`. *Prerequisite for T2 and T3.* |
 | `quantizers.py` | **done** | One interface over `{TurboQuant, INT, KIVI, FP8}` + the `-nc` policy + bit accounting; device-safe; records to an error map for cross-codec comparison. Smoke: `scripts/quantizers_smoke.py`. Finding: TurboQuant's error geometry (channel-decorrelated, inner-product-optimal) is already distinguishable from INT/KIVI/FP8 — see [[turboquant-error-geometry]]. |
-| `pi_regime.py` | TODO | Switch between **public/reused Π** (one `seed`) and **secret/per-deployment Π** (fresh per deployment). Maps onto scos-lab's `seed` arg. |
+| `pi_regime.py` | **done** | public/reused vs secret/per-deployment Π via seed management; `attacker_seed()` encodes what the attacker may know; per-layer Π supported. Smoke `scripts/pi_regime_smoke.py` shows inversion top-1 = 1.00 under public Π vs ~chance under secret Π (prototypes the T3 Π result). |
 | `diff_twin.py` | TODO | **PyTorch differentiable twin** of rotation + Lloyd–Max + QJL for T2's STE training — the research layer is NumPy (no autograd). Freeze scos-lab's centroids + QJL matrix as the reference and validate against them; seed from tonbistudio/turboquant-pytorch (audit first). |
-| `metrics.py` | TODO | Token-level **and** semantic recovery (kept separate), JS divergence, distortion. Port + extend the predecessor's `turboquant_kv/metrics.py`. |
+| `metrics.py` | **done** | Token vs semantic recovery (kept separate), inner-product/attention fidelity + distortion, JS/KL divergence, T2 `canary_fires`. Smoke: `scripts/metrics_smoke.py`. |
 | `benchmarks.py` | TODO | Needle-in-a-haystack / LongBench slice loaders for the sanity benchmark. |
 
 ## Conventions
