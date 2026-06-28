@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# environments
+.venv/
+venv/
+.env
+
+# logs / scratch
+*.log
+logs/
