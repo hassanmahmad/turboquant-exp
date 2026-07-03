@@ -37,20 +37,10 @@ def _ints(env, default):
     return tuple(int(x) for x in raw.split(",")) if raw else default
 
 
-def _select_configs():
-    wanted = os.environ.get("QUANT_CONFIGS")
-    configs = default_configs()
-    if wanted:
-        keep = set(wanted.split(","))
-        configs = [(n, f) for (n, f) in configs if n in keep]
-    return configs
-
-
 def main():
     cfg = get_experiment_config()
     lengths = _ints("NIAH_LENGTHS", (1024, 2048))
     depths = _floats("NIAH_DEPTHS", (0.25, 0.5, 0.75))
-    configs = _select_configs()
 
     print(f"Loading {cfg.model_id} ...")
     model = AutoModelForCausalLM.from_pretrained(
@@ -58,7 +48,18 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_id)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    print(f"Loaded. configs={[n for n, _ in configs]} lengths={lengths} depths={depths}")
+
+    # add a boundary-protected -nc variant, computed from this model's depth
+    # (KV outliers cluster at the first / last layers).
+    from tqsec.quantizers import make_quant_cache
+    n_layers = model.config.num_hidden_layers
+    nc = tuple(sorted({0, 1, n_layers - 2, n_layers - 1}))
+    all_configs = default_configs() + [
+        ("turbo_k3v4_nc", lambda: make_quant_cache("turboquant", key_bits=3, value_bits=4, nc_layers=nc)),
+    ]
+    wanted = os.environ.get("QUANT_CONFIGS")
+    configs = [c for c in all_configs if c[0] in set(wanted.split(","))] if wanted else all_configs
+    print(f"Loaded. configs={[n for n, _ in configs]} lengths={lengths} depths={depths} nc_layers={nc}")
 
     t0 = time.perf_counter()
     results = sanity_sweep(model, tokenizer, configs=configs, lengths=lengths,

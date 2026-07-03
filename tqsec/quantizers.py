@@ -29,6 +29,7 @@ if _VENDOR not in sys.path:
 
 from transformers.cache_utils import DynamicCache, DynamicLayer  # noqa: E402
 from turboquant.core import TurboQuantMSE, TurboQuantProd  # noqa: E402
+from turboquant.mixed_precision import MixedPrecisionQuantizer  # noqa: E402
 
 from tqsec.instrument import turboquant_matrices  # noqa: E402
 
@@ -118,7 +119,9 @@ class TurboQuantCodec:
         if self._vq is not None:
             return
         self._vq = TurboQuantMSE(head_dim, self.value_bits, self.seed)
-        if self.mode == "paper" and self.key_bits >= 2:
+        if self.mode == "mixed":                       # outlier channels kept at higher precision
+            self._kq = MixedPrecisionQuantizer(head_dim, low_bits=self.key_bits, seed=self.seed)
+        elif self.mode == "paper" and self.key_bits >= 2:
             self._kq = TurboQuantProd(head_dim, self.key_bits, self.seed)
         else:
             self._kq = TurboQuantMSE(head_dim, self.key_bits, self.seed)
