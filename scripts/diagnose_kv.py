@@ -74,6 +74,10 @@ def main():
     rel = {n: [] for n in codecs}
     err_out = {n: [] for n in codecs}    # mean |err| on outlier channels
     err_bulk = {n: [] for n in codecs}   # mean |err| on the rest
+    per_layer_v = []                     # same, for the VALUE stream
+    rel_v = {n: [] for n in codecs}
+    err_out_v = {n: [] for n in codecs}
+    err_bulk_v = {n: [] for n in codecs}
 
     for i in range(nl):
         K, V = get_true_kv(cache, i)
@@ -96,6 +100,19 @@ def main():
                 err_out[name].append(aerr_ch[outlier_ch].mean().item())
             err_bulk[name].append(aerr_ch[~outlier_ch].mean().item())
 
+        # value stream (same analysis)
+        ch_max_v = V.abs().amax(dim=(0, 1, 2))
+        med_v = ch_max_v.median()
+        per_layer_v.append((i, V.abs().max().item(), (ch_max_v.max() / (med_v + 1e-9)).item()))
+        outlier_ch_v = ch_max_v > OUTLIER_MULT * med_v
+        for name, codec in codecs.items():
+            recon_v = codec.recon(V, is_key=False)
+            rel_v[name].append(relative_error(V, recon_v))
+            aerr_ch_v = (V - recon_v).abs().mean(dim=(0, 1, 2))
+            if bool(outlier_ch_v.any()):
+                err_out_v[name].append(aerr_ch_v[outlier_ch_v].mean().item())
+            err_bulk_v[name].append(aerr_ch_v[~outlier_ch_v].mean().item())
+
     per_layer.sort(key=lambda x: -x[1])
     print(f"\nlayers={nl}  seq={inputs.input_ids.shape[1]}")
     print(f"max|K|={kmax:.1f}   max|V|={vmax:.1f}   (fp8 e4m3 saturates at {FP8_E4M3_MAX:.0f})")
@@ -110,6 +127,18 @@ def main():
         print(f"  {name:<9} {np.mean(rel[name]):>8.4f} {eo:>12.4f} {np.mean(err_bulk[name]):>9.4f}")
     print("\nreading: if kivi3 keeps err@outlier low while int3/turbo_k3 are high, the outlier")
     print("channels are what break exact retrieval — and only per-channel quant preserves them.")
+
+    per_layer_v.sort(key=lambda x: -x[1])
+    print(f"\nVALUE stream — max|V|={vmax:.1f}; top-3 layers by max|V|:")
+    for i, mx, ratio in per_layer_v[:3]:
+        print(f"  L{i:<3} max|V|={mx:8.1f}   outlier_ratio={ratio:7.1f}x")
+    print("per-codec VALUE error (turbo values = 4-bit MSE; kivi/int per-token 3-bit; fp8 8-bit):")
+    print(f"  {'codec':<9} {'rel_err':>8} {'err@outlier':>12} {'err@bulk':>9}")
+    for name in codecs:
+        eo = np.mean(err_out_v[name]) if err_out_v[name] else float("nan")
+        print(f"  {name:<9} {np.mean(rel_v[name]):>8.4f} {eo:>12.4f} {np.mean(err_bulk_v[name]):>9.4f}")
+    print("\nvalue reading: if turbo's VALUE rel_err >> kivi's, the 4-bit rotation-MSE value path")
+    print("is the 2nd failure mode (why mixed-keys alone didn't recover retrieval).")
 
 
 if __name__ == "__main__":

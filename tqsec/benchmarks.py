@@ -124,6 +124,10 @@ def default_configs():
         ("turbo_k3v4",  lambda: make_quant_cache("turboquant", key_bits=3, value_bits=4)),
         ("turbo_3bit",  lambda: make_quant_cache("turboquant", key_bits=3, value_bits=3)),
         ("turbo_k3v4_mix", lambda: make_quant_cache("turboquant", key_bits=3, value_bits=4, mode="mixed")),
+        # value-path isolation: fix keys high, sweep value bits; + mixed-keys with 8-bit values
+        ("turbo_k8v8",  lambda: make_quant_cache("turboquant", key_bits=8, value_bits=8)),
+        ("turbo_k8v2",  lambda: make_quant_cache("turboquant", key_bits=8, value_bits=2)),
+        ("turbo_k3v8_mix", lambda: make_quant_cache("turboquant", key_bits=3, value_bits=8, mode="mixed")),
         ("int3",        lambda: make_quant_cache("int", key_bits=3, value_bits=3)),
         ("kivi3",       lambda: make_quant_cache("kivi", key_bits=3, value_bits=3)),
         ("fp8",         lambda: make_quant_cache("fp8")),
