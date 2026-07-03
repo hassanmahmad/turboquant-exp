@@ -61,10 +61,11 @@ def main():
 
     # test at the SANITY bit-widths (turbo k3v4 key path, int3, kivi3, fp8)
     codecs = {
-        "turbo_k3": make_codec("turboquant", key_bits=3, value_bits=4),
-        "int3":     make_codec("int", key_bits=3, value_bits=3),
-        "kivi3":    make_codec("kivi", key_bits=3, value_bits=3),
-        "fp8":      make_codec("fp8"),
+        "turbo_k3":  make_codec("turboquant", key_bits=3, value_bits=4),
+        "turbo_mix": make_codec("turboquant", key_bits=3, value_bits=4, mode="mixed"),
+        "int3":      make_codec("int", key_bits=3, value_bits=3),
+        "kivi3":     make_codec("kivi", key_bits=3, value_bits=3),
+        "fp8":       make_codec("fp8"),
     }
     OUTLIER_MULT = 20.0
     kmax = vmax = 0.0
