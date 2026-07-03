@@ -59,16 +59,20 @@ def main():
     cache = out.past_key_values
     nl = n_layers(cache)
 
+    # test at the SANITY bit-widths (turbo k3v4 key path, int3, kivi3, fp8)
     codecs = {
-        "turbo_k8": make_codec("turboquant", key_bits=8, value_bits=8),
-        "int8":     make_codec("int", key_bits=8, value_bits=8),
-        "kivi8":    make_codec("kivi", key_bits=8, value_bits=8),
+        "turbo_k3": make_codec("turboquant", key_bits=3, value_bits=4),
+        "int3":     make_codec("int", key_bits=3, value_bits=3),
+        "kivi3":    make_codec("kivi", key_bits=3, value_bits=3),
         "fp8":      make_codec("fp8"),
     }
+    OUTLIER_MULT = 20.0
     kmax = vmax = 0.0
     over448 = total = 0
     per_layer = []          # (layer, max|K|, channel_outlier_ratio)
     rel = {n: [] for n in codecs}
+    err_out = {n: [] for n in codecs}    # mean |err| on outlier channels
+    err_bulk = {n: [] for n in codecs}   # mean |err| on the rest
 
     for i in range(nl):
         K, V = get_true_kv(cache, i)
@@ -79,10 +83,17 @@ def main():
         over448 += int((K.abs() > FP8_E4M3_MAX).sum().item())
         total += K.numel()
         ch_max = K.abs().amax(dim=(0, 1, 2))            # (head_dim,)
-        ratio = (ch_max.max() / (ch_max.median() + 1e-9)).item()
+        med = ch_max.median()
+        ratio = (ch_max.max() / (med + 1e-9)).item()
         per_layer.append((i, K.abs().max().item(), ratio))
+        outlier_ch = ch_max > OUTLIER_MULT * med        # (head_dim,) bool
         for name, codec in codecs.items():
-            rel[name].append(relative_error(K, codec.recon(K, is_key=True)))
+            recon = codec.recon(K, is_key=True)
+            rel[name].append(relative_error(K, recon))
+            aerr_ch = (K - recon).abs().mean(dim=(0, 1, 2))   # (head_dim,)
+            if bool(outlier_ch.any()):
+                err_out[name].append(aerr_ch[outlier_ch].mean().item())
+            err_bulk[name].append(aerr_ch[~outlier_ch].mean().item())
 
     per_layer.sort(key=lambda x: -x[1])
     print(f"\nlayers={nl}  seq={inputs.input_ids.shape[1]}")
@@ -91,11 +102,13 @@ def main():
     print("\ntop-5 layers by max|K|  (layer : max|K| : per-channel outlier ratio):")
     for i, mx, ratio in per_layer[:5]:
         print(f"  L{i:<3} max|K|={mx:8.1f}   outlier_ratio={ratio:7.1f}x")
-    print("\nmean KEY relative error per codec (8-bit) — high = can't handle the outliers:")
+    print(f"\nper-codec KEY error at sanity bit-widths (outlier channels = >{OUTLIER_MULT:.0f}x median):")
+    print(f"  {'codec':<9} {'rel_err':>8} {'err@outlier':>12} {'err@bulk':>9}")
     for name in codecs:
-        print(f"  {name:<9} {np.mean(rel[name]):.4f}")
-    print("\nreading: big max|K| + nonzero fp8-overflow + large outlier_ratio => Qwen KV outliers.")
-    print("kivi8 low + int8/fp8 high => per-channel wins; watch turbo_k8's number specifically.")
+        eo = np.mean(err_out[name]) if err_out[name] else float("nan")
+        print(f"  {name:<9} {np.mean(rel[name]):>8.4f} {eo:>12.4f} {np.mean(err_bulk[name]):>9.4f}")
+    print("\nreading: if kivi3 keeps err@outlier low while int3/turbo_k3 are high, the outlier")
+    print("channels are what break exact retrieval — and only per-channel quant preserves them.")
 
 
 if __name__ == "__main__":
