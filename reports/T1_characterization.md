@@ -45,7 +45,7 @@ Config names: `turbo_k{K}v{V}` = TurboQuant paper mode with K-bit keys (Prod = (
 QJL) and V-bit values; `_mix` = outlier channels kept high-precision; `_nc` = boundary layers
 {0,1,N−2,N−1} left FP16. `int`/`kivi` at 3-bit; `fp8` = 8-bit `e4m3`.
 
-## 3. Results — quality (NIAH found-rate)
+## 3. Results — quality & memory
 
 | Config | bits K/V | TinyLlama-1.1B | Mistral-7B | Llama-3.1-8B | Qwen2.5-7B |
 |---|---|---|---|---|---|
@@ -69,6 +69,37 @@ Mistral (4.4×) 0.833 → Llama (5.9×) 0.50. On **Qwen** (extreme ~100× bounda
 *every* bit-width — even 8-bit K+V is only 0.167 — and only `fp16`, `kivi3`, and `turbo_k3v4_nc` survive.
 `int`/`fp8`/`KIVI` are robust throughout. `-nc` recovers 3-bit degradation where present (Llama 0.5→1.0,
 Qwen 0→1.0) and is a no-op where there's nothing to protect (Mistral 0.833=0.833).
+
+### Memory (counted)
+
+The point of KV compression. **Counted** bytes-stored per element = code bits (*b* per coordinate) + a
+small per-vector overhead: TurboQuant stores a 16-bit norm (Prod keys also add a 1-bit QJL sign per
+coordinate + a second norm); plain-INT and KIVI values store a 16-bit min + scale; KIVI keys' per-channel
+scales amortise to ≈0 over the sequence. For head_dim = 128, averaged over K and V:
+
+Compression is **model-independent** (bits are bits); only quality varies by model. Quality columns are
+NIAH found-rate:
+
+| Config | bits/elem | vs FP16 | Mistral | Llama-3.1 | Qwen |
+|---|---:|---:|---:|---:|---:|
+| fp16 | 16.0 | 1.0× | 1.00 | 1.00 | 1.00 |
+| fp8 | 8.0 | 2.0× | 1.00 | 1.00 | 0.00 |
+| turbo_k8v4 | 6.2 | 2.6× | 1.00 | 1.00 | 0.17 |
+| turbo_k3v4_nc † | 5.5 | 2.9× | 0.83 | 1.00 | **1.00** |
+| turbo_k3v4 | 3.7 | 4.3× | 0.83 | 0.50 | 0.00 |
+| int3 | 3.3 | 4.9× | 1.00 | 1.00 | 0.00 |
+| **kivi3** | **3.1** | **5.1×** | 0.83 | 1.00 | **1.00** |
+
+† `-nc` leaves 4 boundary layers at FP16 (ratio shown for Qwen's N = 28 layers; marginally higher on the
+32-layer models). The Qwen-only value-sweep configs (`turbo_k8v8` 2.0×, `turbo_k8v2` 3.1×, `turbo_3bit`
+5.0×) all scored ≤ 0.17 on Qwen and were run for the §5 mechanism analysis only.
+
+**Compression is ~free on well-behaved models; on the hard case, KIVI wins.** On Mistral and Llama the
+aggressive 3-bit configs mostly keep full quality — `int3` (4.9×) and `kivi3` (5.1×) at 1.00, `turbo_k3v4`
+(4.3×) at 0.5–0.83 — so the full ~4–5× is usable. On Qwen only `kivi3` (5.1×) and `turbo_k3v4_nc` (2.9×)
+survive. **`kivi3` is the single config that gives the highest compression *and* works on every model** —
+the robust memory×quality choice; TurboQuant must fall back to `-nc` (2.9×, lower compression) to function
+on Qwen. These are *counted* (bytes-stored) figures; a *measured* number needs vLLM (deferred).
 
 ## 4. The KV outlier profile
 
@@ -133,9 +164,8 @@ scale and preserves it; `-nc` sidesteps the problem by not compressing the bound
 ## 7. Limitations & future work
 
 - **Quality metric = NIAH only.** Add a LongBench slice and perplexity for a broader quality picture.
-- **Memory not yet tabulated.** The harness counts compressed bits (`QuantCacheLayer.compression_ratio`);
-  report **counted** memory per config (nominal ratios: k3v4/int3/kivi3 ≈ 4.6–5.3×, k8v4 ≈ 2.7×, fp8 2×;
-  `-nc` slightly less). A *measured* figure needs vLLM (deferred, per the plan).
+- **Counted, not measured, memory** (§3). The figures are bytes-stored (codes + scales + QJL); a
+  *measured* number under a serving allocator needs vLLM (deferred, per the plan).
 - **Four models** so far (TinyLlama, Mistral-7B, Llama-3.1-8B, Qwen2.5-7B); the outlier-ratio ↔ survival
   relationship holds across all four (three mild → work; Qwen extreme → collapses).
 - **Coarse metric:** found-rate has only n=6 per config (1/6 granularity). Widen the NIAH grid
