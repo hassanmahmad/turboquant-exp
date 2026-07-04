@@ -50,19 +50,19 @@ def main():
     acc_secret = inversion_accuracy(sec.seed_for_layer(0), attacker_seed=42)
     chance = 1.0 / 200
 
-    print("=== inversion attack: does knowing Π help? ===")
-    print(f"  public  Π (attacker knows seed) : top-1 = {acc_public:.3f}")
-    print(f"  secret  Π (attacker must guess) : top-1 = {acc_secret:.3f}  (chance ~ {chance:.3f})")
+    print("=== inversion attack: does knowing Pi help? ===")
+    print(f"  public  Pi (attacker knows seed) : top-1 = {acc_public:.3f}")
+    print(f"  secret  Pi (attacker must guess) : top-1 = {acc_secret:.3f}  (chance ~ {chance:.3f})")
     assert acc_public > 0.7, f"public inversion should be easy, got {acc_public}"
     assert acc_secret < 0.05, f"secret inversion should be ~chance, got {acc_secret}"
-    print("  [ok] secret Π closes the leak: inversion drops from easy to chance")
+    print("  [ok] secret Pi closes the leak: inversion drops from easy to chance")
 
     # --- regime mechanics ---
     assert public_regime(7).attacker_seed(0) == 7        # public: attacker knows the seed
     assert secret_regime("A").attacker_seed(0) is None   # secret: unknown
     assert secret_regime("A").base_seed != secret_regime("B").base_seed  # per-deployment Π
     assert public_regime(42).base_seed == public_regime(42).base_seed    # reused/reproducible
-    print("\n[ok] mechanics: public exposes seed, secret hides it, deployments get distinct Π")
+    print("\n[ok] mechanics: public exposes seed, secret hides it, deployments get distinct Pi")
 
     # --- per-layer Π wiring through the cache ---
     def layer_rotations(regime, n=3):
@@ -75,9 +75,9 @@ def main():
 
     shared = layer_rotations(public_regime(42, per_layer=False))
     perlayer = layer_rotations(secret_regime("A", per_layer=True))
-    assert np.allclose(shared[0], shared[1]), "public non-per-layer should reuse one Π"
+    assert np.allclose(shared[0], shared[1]), "public non-per-layer should reuse one Pi"
     assert not np.allclose(perlayer[0], perlayer[1]), "secret per-layer should differ per layer"
-    print("[ok] cache wiring: reused-Π shares one rotation; per-layer-secret differs per layer")
+    print("[ok] cache wiring: reused-Pi shares one rotation; per-layer-secret differs per layer")
 
     print(f"\nregime records (for results provenance):")
     print(f"  {pub.describe()}")
