@@ -1,0 +1,29 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/masim000/models/tinyllama-1.1b-chat-v1.0",
+  "model_tag": "tinyllama-quick",
+  "lengths": [
+    512
+  ],
+  "depths": [
+    0.5
+  ],
+  "max_new_tokens": 16,
+  "elapsed_s": 11.2,
+  "found_rate": {
+    "fp16": 1.0
+  },
+  "results": {
+    "fp16": {
+      "found_rate": 1.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        }
+      ]
+    }
+  }
+}
