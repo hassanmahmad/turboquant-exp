@@ -76,6 +76,7 @@ def main():
 
     out = {"model": cfg.model_id, "model_tag": cfg.model_tag, "lengths": list(lengths),
            "depths": list(depths), "ppl_tokens": ppl_tokens, "longbench_task": lb_task,
+           "chat_template_enable_thinking": os.environ.get("CHAT_TEMPLATE_ENABLE_THINKING"),
            "elapsed_s": elapsed, "results": results}
     path = os.path.join(cfg.output_dir, "quality.json")
     with open(path, "w", encoding="utf-8") as f:
