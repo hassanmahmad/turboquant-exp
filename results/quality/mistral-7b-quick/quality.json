@@ -1,0 +1,43 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/masim000/models/mistral-7b-instruct-v0.3",
+  "model_tag": "mistral-7b-quick",
+  "lengths": [
+    512
+  ],
+  "depths": [
+    0.5
+  ],
+  "ppl_tokens": 256,
+  "longbench_task": null,
+  "elapsed_s": 126.9,
+  "results": {
+    "fp16": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.276
+    },
+    "turbo_k8v4": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.26
+    },
+    "turbo_k3v4": {
+      "niah_found_rate": 1.0,
+      "perplexity": 6.062
+    },
+    "int3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 6.0
+    },
+    "kivi3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.305
+    },
+    "fp8": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.265
+    },
+    "turbo_k3v4_nc": {
+      "niah_found_rate": 0.0,
+      "perplexity": 5.894
+    }
+  }
+}

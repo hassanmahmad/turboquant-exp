@@ -1,0 +1,107 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/masim000/models/mistral-7b-instruct-v0.3",
+  "model_tag": "mistral-7b-quick",
+  "lengths": [
+    512
+  ],
+  "depths": [
+    0.5
+  ],
+  "max_new_tokens": 16,
+  "elapsed_s": 108.1,
+  "found_rate": {
+    "fp16": 1.0,
+    "turbo_k8v4": 1.0,
+    "turbo_k3v4": 1.0,
+    "int3": 1.0,
+    "kivi3": 1.0,
+    "fp8": 1.0,
+    "turbo_k3v4_nc": 0.0
+  },
+  "results": {
+    "fp16": {
+      "found_rate": 1.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k8v4": {
+      "found_rate": 1.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k3v4": {
+      "found_rate": 1.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "int3": {
+      "found_rate": 1.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "kivi3": {
+      "found_rate": 1.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "fp8": {
+      "found_rate": 1.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k3v4_nc": {
+      "found_rate": 0.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": false,
+          "answer": "741900 (Note: There seems to be a mistake"
+        }
+      ]
+    }
+  }
+}
