@@ -21,6 +21,7 @@ python -m pip install --upgrade \
   accelerate \
   safetensors \
   sentencepiece \
+  protobuf \
   huggingface_hub \
   numpy \
   scipy \
