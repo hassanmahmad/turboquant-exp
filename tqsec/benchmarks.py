@@ -151,21 +151,32 @@ def sanity_sweep(model, tokenizer, *, configs=None, lengths=(1000, 2000, 4000),
 # --------------------------------------------------------------------------------------
 # LongBench slice (needs the `datasets` library + a pre-fetched dataset)
 # --------------------------------------------------------------------------------------
-def load_longbench_slice(task="hotpotqa", n_samples=20, split="test", cache_dir=None):
-    """Load a LongBench task slice. Lazy-imports `datasets`; offline-aware.
+def load_longbench_slice(task="hotpotqa", n_samples=20, split=None, cache_dir=None):
+    """Load a LongBench task slice straight from the repo's `data.zip`.
 
-    Leonardo: pre-fetch on the login node — `datasets.load_dataset("THUDM/LongBench", task,
-    cache_dir=$SCRATCH/data)` — then run with HF_DATASETS_OFFLINE=1 and the same cache_dir.
-    Returns [{"context", "input", "answers"}].
+    Bypasses `datasets` (which 4.x refuses because LongBench is a script dataset). Reads
+    `data/<task>.jsonl` out of the zip; returns [{"context", "input", "answers"}].
+
+    Pre-fetch on the login node (online), then it works offline:
+        from huggingface_hub import hf_hub_download
+        hf_hub_download("zai-org/LongBench", "data.zip", repo_type="dataset")
     """
-    try:
-        import datasets
-    except ImportError as e:  # pragma: no cover
-        raise RuntimeError("LongBench needs `pip install datasets`") from e
-    ds = datasets.load_dataset("THUDM/LongBench", task, split=split, cache_dir=cache_dir)
-    ds = ds.select(range(min(n_samples, len(ds))))
-    return [{"context": r.get("context", ""), "input": r.get("input", ""),
-             "answers": r.get("answers", [])} for r in ds]
+    import json
+    import zipfile
+
+    from huggingface_hub import hf_hub_download
+
+    path = hf_hub_download(repo_id="zai-org/LongBench", filename="data.zip",
+                           repo_type="dataset", cache_dir=cache_dir)
+    out = []
+    with zipfile.ZipFile(path) as z, z.open(f"data/{task}.jsonl") as f:
+        for line in f:
+            if len(out) >= n_samples:
+                break
+            r = json.loads(line)
+            out.append({"context": r.get("context", ""), "input": r.get("input", ""),
+                        "answers": r.get("answers", [])})
+    return out
 
 
 def score_longbench(answer, golds):
