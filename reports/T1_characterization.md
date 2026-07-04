@@ -1,8 +1,7 @@
 # T1 — TurboQuant KV-Cache Characterization
 
-**Status:** first result (2026-07, Leonardo/CINECA). Quality characterization across quantizers and
-bit-widths on a real model, with a mechanistic explanation. Memory tables and additional models are
-future work (§7).
+**Status:** first result (2026-07, Leonardo/CINECA). NIAH quality, counted memory, and mechanism
+analysis are landed. LongBench/perplexity and measured serving memory remain future work (§7).
 
 ## 1. Headline
 
