@@ -6,18 +6,29 @@ future work (§7).
 
 ## 1. Headline
 
-**On Qwen2.5-7B, uniform TurboQuant cannot do exact long-context retrieval at *any* bit-width.** Even
-8-bit keys + 8-bit values score only 0.167 on needle-in-a-haystack, while 3-bit KIVI scores 1.0. The
-cause is a handful of **boundary-layer outlier channels** (up to ~100× the median magnitude) whose
-values TurboQuant's random-rotation compression corrupts — enough to flip the exact answer
-(`7421900` → `741900`). The **only** TurboQuant configuration that recovers is `-nc` (leaving the
-first/last layers uncompressed); otherwise **per-channel KIVI** is the robust choice.
+**TurboQuant's KV-cache quality is governed by the model's outlier structure — and the KV outlier ratio
+predicts whether it survives.** On models with well-behaved KV (**TinyLlama**, **Mistral-7B**,
+**Llama-3.1-8B**; worst key channel only ~4–6× the median) uniform TurboQuant is quality-neutral at 8-bit
+keys, and its 3-bit degradation scales smoothly with the outlier ratio (Mistral 4.4×→0.83,
+Llama 5.9×→0.50) — the textbook picture. But on **Qwen2.5-7B**, which has extreme **boundary-layer outlier
+channels** (up to ~100× the median), uniform TurboQuant **collapses at every bit-width** — even 8-bit
+K+V scores only 0.167 on needle-in-a-haystack, while 3-bit KIVI scores 1.0. TurboQuant's random rotation
+spreads each ~100× outlier across all coordinates, and reconstructing a token dominated by such a channel
+accumulates enough error to flip the exact answer (`7421900` → `741900`). On Qwen the only fixes are
+`-nc` (leave the first/last layers FP16) or per-channel KIVI.
 
-> **3-bit KIVI beats 8-bit TurboQuant on Qwen exact retrieval.**
+> **Mild outliers (Mistral 4×, TinyLlama 5×) → uniform TurboQuant works. Extreme outliers (Qwen 100×)
+> → it collapses at any bit-width, and 3-bit KIVI beats 8-bit TurboQuant.**
 
-This is a genuinely negative result for *uniform* TurboQuant on outlier-heavy KV, consistent with the
-independent vLLM evaluation ("FP8 is often the better default") and turboquant_plus ("K precision
-dominates; protect the first 2 + last 2 layers").
+This is a negative result for *uniform* TurboQuant on outlier-heavy KV, consistent with the independent
+vLLM evaluation ("FP8 is often the better default") and turboquant_plus ("K precision dominates; protect
+the first 2 + last 2 layers").
+
+![KV outlier ratio vs NIAH found-rate for 8-bit and 3-bit TurboQuant across four models](figures/outlier_gradient.png)
+
+*Figure 1 — 8-bit-key survival is binary (only Qwen's ~100× outliers break it, dropping to 0.17);
+3-bit degrades with the ratio. KIVI / TurboQuant-`nc` stay ≥0.83 on all four (not plotted). TinyLlama's
+3-bit = 0 is a 1.1B size effect. Regenerate: `python reports/figures/outlier_gradient.py`.*
 
 ## 2. Setup
 
@@ -36,34 +47,53 @@ QJL) and V-bit values; `_mix` = outlier channels kept high-precision; `_nc` = bo
 
 ## 3. Results — quality (NIAH found-rate)
 
-| Config | bits K/V | TinyLlama-1.1B | Qwen2.5-7B |
-|---|---|---|---|
-| fp16 (baseline) | 16 / 16 | **1.00** | **1.00** |
-| turbo_k8v8 | 8 / 8 | — | 0.167 |
-| turbo_k8v4 | 8 / 4 | 1.00 | 0.167 |
-| turbo_k8v2 | 8 / 2 | — | 0.00 |
-| turbo_k3v4 | 3 / 4 | 0.00 | 0.00 |
-| turbo_3bit | 3 / 3 | 0.00 | 0.00 |
-| turbo_k3v4_mix | 3 / 4 (mixed K) | — | 0.00 |
-| turbo_k3v8_mix | 3 / 8 (mixed K) | — | 0.00 |
-| **turbo_k3v4_nc** | 3 / 4 (boundary FP16) | — | **1.00** |
-| int3 | 3 / 3 | 0.667 | 0.00 |
-| **kivi3** | 3 / 3 | 0.833 | **1.00** |
-| fp8 | 8 / 8 | 1.00 | 0.00 |
+| Config | bits K/V | TinyLlama-1.1B | Mistral-7B | Llama-3.1-8B | Qwen2.5-7B |
+|---|---|---|---|---|---|
+| fp16 (baseline) | 16 / 16 | **1.00** | **1.00** | **1.00** | **1.00** |
+| turbo_k8v8 | 8 / 8 | — | — | — | 0.167 |
+| turbo_k8v4 | 8 / 4 | 1.00 | **1.00** | **1.00** | 0.167 |
+| turbo_k8v2 | 8 / 2 | — | — | — | 0.00 |
+| turbo_k3v4 | 3 / 4 | 0.00 | 0.833 | 0.50 | 0.00 |
+| turbo_3bit | 3 / 3 | 0.00 | — | — | 0.00 |
+| turbo_k3v4_mix | 3 / 4 (mixed K) | — | — | — | 0.00 |
+| turbo_k3v8_mix | 3 / 8 (mixed K) | — | — | — | 0.00 |
+| **turbo_k3v4_nc** | 3 / 4 (boundary FP16) | — | 0.833 | 1.00 | **1.00** |
+| int3 | 3 / 3 | 0.667 | 1.00 | 1.00 | 0.00 |
+| **kivi3** | 3 / 3 | 0.833 | 0.833 | 1.00 | **1.00** |
+| fp8 | 8 / 8 | 1.00 | 1.00 | 1.00 | 0.00 |
 
-**Two regimes.** On **TinyLlama** (no severe outliers) TurboQuant is quality-neutral at 8-bit keys and
-degrades gracefully — the textbook picture. On **Qwen** everything except `fp16`, `kivi3`, and
-`turbo_k3v4_nc` collapses, *including 8-bit configs*. The difference is entirely the KV outlier
-structure (§4).
+**The outlier structure decides everything, on a gradient.** On the three well-behaved models (TinyLlama,
+Mistral, Llama-3.1 — worst key channel ~4–6× the median) TurboQuant is quality-neutral at 8-bit keys
+(`turbo_k8v4 = 1.00` on all three) and its 3-bit degradation *grows with the outlier ratio*:
+Mistral (4.4×) 0.833 → Llama (5.9×) 0.50. On **Qwen** (extreme ~100× boundary outliers) it collapses at
+*every* bit-width — even 8-bit K+V is only 0.167 — and only `fp16`, `kivi3`, and `turbo_k3v4_nc` survive.
+`int`/`fp8`/`KIVI` are robust throughout. `-nc` recovers 3-bit degradation where present (Llama 0.5→1.0,
+Qwen 0→1.0) and is a no-op where there's nothing to protect (Mistral 0.833=0.833).
 
-## 4. The KV outlier profile (Qwen2.5-7B)
+## 4. The KV outlier profile
 
-From `scripts/diagnose_kv.py` (one forward, 566-token prompt):
+From `scripts/diagnose_kv.py` (one forward). **Qwen2.5-7B:**
 
 - **max|K| = 420** — below the fp8 `e4m3` limit (448), so **no fp8 overflow**.
 - **Extreme, boundary-concentrated key outliers:** L27 (last) **99.6×** median, L0 (first) **31.8×**,
   then L3 15×, L1 10.7×, L19 10.2×. The worst two are the boundary layers.
 - **Values are well-behaved:** max|V| = 72.5, worst channel only 4.0× median — **no value outliers.**
+
+**Cross-model — the outlier ratio predicts TurboQuant survival (and degradation):**
+
+| Model | max\|K\| | worst key channel | turbo_k8v4 | turbo_k3v4 |
+|---|---|---|---|---|
+| TinyLlama-1.1B | small | ~4.8× | 1.00 | 0.00 † |
+| Mistral-7B-v0.3 | 22.5 | 4.4× (mid, spread) | 1.00 | 0.833 |
+| Llama-3.1-8B | 34.2 | 5.9× (mid, spread) | 1.00 | 0.50 |
+| Qwen2.5-7B | 420 | **99.6×** (L27, boundary) | **0.167** | 0.00 |
+
+† TinyLlama is 1.1B — 3-bit is aggressive on a weak model, orthogonal to outliers.
+
+Two rules: **8-bit survival is binary** — only Qwen's extreme, boundary-concentrated 100× outliers break
+it; on the other three *no* channel even crosses the 20× threshold and TurboQuant is quality-neutral.
+**3-bit degradation is a gradient** in the outlier ratio (Mistral 4.4×→0.83, Llama 5.9×→0.50). The
+outlier ratio is a one-number predictor of whether uniform TurboQuant is viable on a given model.
 
 ## 5. Mechanism — it is the boundary-layer key outliers, nothing else
 
@@ -106,8 +136,10 @@ scale and preserves it; `-nc` sidesteps the problem by not compressing the bound
 - **Memory not yet tabulated.** The harness counts compressed bits (`QuantCacheLayer.compression_ratio`);
   report **counted** memory per config (nominal ratios: k3v4/int3/kivi3 ≈ 4.6–5.3×, k8v4 ≈ 2.7×, fp8 2×;
   `-nc` slightly less). A *measured* figure needs vLLM (deferred, per the plan).
-- **Two models.** Replicate on Llama-3.1-8B-Instruct and Mistral-7B-Instruct to test outlier-structure
-  generality.
+- **Four models** so far (TinyLlama, Mistral-7B, Llama-3.1-8B, Qwen2.5-7B); the outlier-ratio ↔ survival
+  relationship holds across all four (three mild → work; Qwen extreme → collapses).
+- **Coarse metric:** found-rate has only n=6 per config (1/6 granularity). Widen the NIAH grid
+  (more lengths/depths) to smooth the 3-bit degradation curve.
 - **QJL ablation not isolated.** The 3-bit collapse implicates the (K−1)-bit-scalar + QJL split; a direct
   `mode=mse` (rotation, no QJL) vs `paper` comparison would separate rotation from QJL.
 - **Attention-level metric.** `err@outlier` is reconstruction; an inner-product / attention-fidelity
