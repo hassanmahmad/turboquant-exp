@@ -12,6 +12,7 @@ Grid: `length=512`, `depth=0.5`, `max_new_tokens=16`, one sample per config.
 | 48530357 | mistral-7b-quick | completed |
 | 48530358 | llama3-8b-quick | completed |
 | 48530359 | qwen3-8b-quick | completed |
+| 48530934 | mistral-7b-quick quality | completed |
 
 ## Found Rate
 | model | fp16 | turbo_k8v4 | turbo_k3v4 | int3 | kivi3 | fp8 | turbo_k3v4_nc |
@@ -25,3 +26,17 @@ Qwen3 failed even under FP16 on this prompt, so that row is not a compression re
 
 JSON outputs are under `results/sanity/*quick*/sanity_benchmark.json`.
 
+## Mistral Quality
+Same one-point NIAH grid plus perplexity over 256 tokens.
+
+| config | NIAH found rate | perplexity |
+|---|---:|---:|
+| fp16 | 1.0 | 5.276 |
+| turbo_k8v4 | 1.0 | 5.260 |
+| turbo_k3v4 | 1.0 | 6.062 |
+| int3 | 1.0 | 6.000 |
+| kivi3 | 1.0 | 5.305 |
+| fp8 | 1.0 | 5.265 |
+| turbo_k3v4_nc | 0.0 | 5.894 |
+
+JSON output: `results/quality/mistral-7b-quick/quality.json`.
