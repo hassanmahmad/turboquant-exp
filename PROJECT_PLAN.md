@@ -1,6 +1,6 @@
 # TurboQuant KV-Cache Security — Project Plan
 
-**Status:** greenfield restart of `../turboquant-kv-cache-experiments`.
+**Status:** Phase 0 (reuse audit) and Phase 1 (instrumented foundation) are done. T1 characterization has been run on four models; the writeup is `reports/T1_characterization.md`. Next is T2 and T3. (Greenfield restart of `../turboquant-kv-cache-experiments`.)
 **Core principle:** *reuse a faithful TurboQuant; build only the instrumentation and the attacks.*
 **Stack principle:** *plain HuggingFace `transformers` on HPC is the mandatory foundation; vLLM is a deferred, optional T1-only oracle — added only if T1 must report measured latency.*
 **Why restart:** the previous repo implemented a "TurboQuant-*style*" cache (uniform-affine quant + a sign-residual that is **not** QJL, keys-only, all layers, dequantized floats fed back into `DynamicCache`). That is the wrong object of study for a security paper that must claim *TurboQuant-specificity*. This time the quantizer is real and the effort goes where the research is.
@@ -117,22 +117,22 @@ turboquant-exp/
 
 ### Phase 1 — Shared instrumented foundation + T1 quality baseline (Weeks 2–4)
 **Owner:** Student 1 leads; Students 2 & 3 build their FP-KV baselines in this window.
-- [ ] **`tqsec/instrument.py`** — wrap the research layer to dump, per layer/head/token/channel: rotation Π, scalar codes, QJL residual, and **reconstruction error = true KV − reconstructed KV**. Produce the **error map** (is error biased per channel? does QJL zero the mean? is error concentrated on high-magnitude tokens/channels?). *This map is the raw material for T2 and T3 — nothing downstream starts without it.*
-- [ ] **`tqsec/quantizers.py` control harness** — same interface for **{TurboQuant, plain INT3/INT4, KIVI, FP8-KV}**. Every later experiment runs against all four. (TurboQuant-specificity is unprovable without this; FP8 is the "is TurboQuant even worth it" baseline.)
-- [ ] **`tqsec/pi_regime.py`** — switch between **public/reused Π** and **secret/per-deployment Π**. The single biggest security variable; both attacks get reported under both regimes.
-- [ ] **Sanity benchmark** (`tqsec/benchmarks.py`) — needle-in-a-haystack or a LongBench slice; confirm research layer is quality-neutral ~3.5 bits, degrades ~2.5 bits, matching the paper.
-- **Deliverable:** error map + control harness + Π switch + a passing sanity benchmark. **This is the project's backbone.**
+- [x] **`tqsec/instrument.py`** — wrap the research layer to dump, per layer/head/token/channel: rotation Π, scalar codes, QJL residual, and **reconstruction error = true KV − reconstructed KV**. Produce the **error map** (is error biased per channel? does QJL zero the mean? is error concentrated on high-magnitude tokens/channels?). *This map is the raw material for T2 and T3 — nothing downstream starts without it.*
+- [x] **`tqsec/quantizers.py` control harness** — same interface for **{TurboQuant, plain INT3/INT4, KIVI, FP8-KV}**. Every later experiment runs against all four. (TurboQuant-specificity is unprovable without this; FP8 is the "is TurboQuant even worth it" baseline.)
+- [x] **`tqsec/pi_regime.py`** — switch between **public/reused Π** and **secret/per-deployment Π**. The single biggest security variable; both attacks get reported under both regimes.
+- [x] **Sanity benchmark** (`tqsec/benchmarks.py`) — needle-in-a-haystack or a LongBench slice; confirm research layer is quality-neutral ~3.5 bits, degrades ~2.5 bits, matching the paper.
+- **Deliverable (done):** error map, control harness, Π switch, metrics, and benchmarks are built with passing smoke tests, and the sanity benchmark runs on real models. This is the project's backbone.
 
 ### Phase 2 — Parallel tracks (Weeks 4–10)
 
 #### T1 — Characterization (Student 1, Weeks 4–7)
 **Required (HF-only):**
-- [ ] Across bit-widths (FP16, k8v4, 4bit_nc, k3v4_nc, 3bit_nc) + **FP8** KV: measure **quality** (LongBench + needle) and **counted/theoretical memory** (bytes stored: codes + scales + QJL vs FP16) on the HF research layer.
-- [ ] Document the `-nc` policy (which boundary layers are uncompressed) and hold it constant across models.
+- [x] Across bit-widths and quantizers ({TurboQuant, INT, KIVI, FP8}, plus the `-nc` variant): quality (needle-in-a-haystack) and counted memory measured on four models. LongBench and perplexity are still to add.
+- [x] Document the `-nc` policy (which boundary layers are uncompressed) and hold it constant across models.
 
 **Optional (only if a *measured* efficiency claim is required) — bolt on vLLM:**
 - [ ] Stand up vLLM on Leonardo; serve the same models with `--kv-cache-dtype turboquant_*`; record **measured** memory + latency/throughput; cross-check vLLM distortion vs the research layer.
-- **Deliverable:** `reports/T1_characterization.md` — quality + (counted) memory tables; *if vLLM used*: measured memory/latency + the A100-vs-paper(H100) speedup caveat. State for every memory number whether it is counted or measured.
+- **Deliverable (done):** `reports/T1_characterization.md` is written, with quality (needle, four models) and counted-memory tables, the Qwen outlier mechanism, and a figure. The main result: a model's KV outlier ratio predicts whether uniform TurboQuant works. Qwen's ~100x boundary-layer outliers break it at every bit-width, where KIVI or `-nc` are needed. Optional depth not yet done: LongBench, perplexity, the QJL ablation, and vLLM measured efficiency.
 
 #### T2 — Compression-activated adversarial behavior (Student 2, Weeks 4–10)
 **Target is a BENIGN CANARY, not a harmful payload** — a specific, unmistakable marker behavior (e.g., trigger → a fixed odd/wrong answer). Same existence proof, safer, easier to measure. The bar is *FP-absent / TurboQuant-present / specifically-triggered* — **not** mere output drift or degradation.
