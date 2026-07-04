@@ -76,11 +76,25 @@ def score_needle(answer, cfg):
 # --------------------------------------------------------------------------------------
 # Runners (need a model + tokenizer)
 # --------------------------------------------------------------------------------------
+def _chat_template_kwargs():
+    raw = os.environ.get("CHAT_TEMPLATE_ENABLE_THINKING")
+    if raw is None:
+        return {}
+    return {"enable_thinking": raw.strip().lower() not in {"0", "false", "no", "off"}}
+
+
 def _to_inputs(tokenizer, prompt, use_chat_template, device):
     if use_chat_template and getattr(tokenizer, "chat_template", None):
-        prompt = tokenizer.apply_chat_template(
-            [{"role": "user", "content": prompt}], tokenize=False, add_generation_prompt=True
-        )
+        kwargs = {
+            "tokenize": False,
+            "add_generation_prompt": True,
+            **_chat_template_kwargs(),
+        }
+        try:
+            prompt = tokenizer.apply_chat_template([{"role": "user", "content": prompt}], **kwargs)
+        except TypeError:
+            kwargs.pop("enable_thinking", None)
+            prompt = tokenizer.apply_chat_template([{"role": "user", "content": prompt}], **kwargs)
     return tokenizer(prompt, return_tensors="pt").to(device)
 
 

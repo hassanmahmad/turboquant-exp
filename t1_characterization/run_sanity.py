@@ -71,6 +71,7 @@ def main():
         "model": cfg.model_id, "model_tag": cfg.model_tag,
         "lengths": list(lengths), "depths": list(depths),
         "max_new_tokens": cfg.max_new_tokens, "elapsed_s": elapsed,
+        "chat_template_enable_thinking": os.environ.get("CHAT_TEMPLATE_ENABLE_THINKING"),
         "found_rate": found, "results": results,
     }
     path = os.path.join(cfg.output_dir, "sanity_benchmark.json")
