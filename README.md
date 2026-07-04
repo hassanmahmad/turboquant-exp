@@ -33,28 +33,22 @@ tqsec/                   # the thin layer we own (instrument, controls, Π-regim
 t1_characterization/     # Student 1
 t2_behavior/             # Student 2
 t3_leakage/              # Student 3
-env/ scripts/ slurm/     # Leonardo setup, utilities, batch jobs
-results/ reports/        # outputs and write-ups (T1_characterization.md)
-docs/                    # VALIDATION.md, RUNBOOK.md; ARCHITECTURE and ETHICS still to write
+env/ scripts/ slurm/     # Leonardo setup, utilities, batch jobs (port from predecessor)
+results/ reports/        # outputs and write-ups
+docs/                    # validation, architecture, runbook, ethics
 ```
 
 ## Status
-The shared foundation is built and T1 is done. The reuse audit passed (`docs/VALIDATION.md`), the
-`tqsec` package (instrumentation, the control harness, the Π-regime switch, metrics, benchmarks) has
-passing smoke tests, and the Leonardo setup runs (`docs/RUNBOOK.md`).
-
-T1 characterization has been run on four models: TinyLlama-1.1B, Mistral-7B, Llama-3.1-8B, and
-Qwen2.5-7B. The writeup is [reports/T1_characterization.md](reports/T1_characterization.md). The main
-result is that a model's KV outlier ratio predicts whether uniform TurboQuant works. It stays
-quality-neutral at 8-bit on well-behaved models, but on Qwen, which has roughly 100x boundary-layer
-outlier channels, it fails at every bit-width; per-channel KIVI or the `-nc` boundary-protected variant
-are needed there instead.
-
-Next: T2 (compression-activated backdoor) and T3 (prompt leakage). See `PROJECT_PLAN.md`.
+**Phase 1 — shared foundation: code-complete.** Reuse gate passed (`docs/VALIDATION.md`); `tqsec/`
+built (`instrument` error map · `quantizers` {TurboQuant,INT,KIVI,FP8}+`-nc` · `pi_regime` · `metrics`
+· `benchmarks` · `diff_twin`) with smoke tests; Leonardo scaffolding ready (`env/`, `slurm/`, `scripts/`,
+`t1_characterization/run_sanity.py`). **T1 has a first Leonardo NIAH result** in
+`reports/T1_characterization.md`. **Next:** add LongBench/perplexity coverage, then run T2/T3.
 
 ## Quickstart (smoke)
 ```
 python -m pytest third_party/turboquant/tests/ -v   # 49 passing — faithfulness gate
 python scripts/audit_evidence.py                    # distortion + QJL-bias evidence
+python scripts/diff_twin_smoke.py                   # PyTorch twin reference + gradient check
 ```
 Requires `numpy scipy` (algorithm) and `torch transformers` (HF integration).

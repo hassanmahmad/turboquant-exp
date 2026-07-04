@@ -10,6 +10,7 @@ Leonardo run flow: **[../docs/RUNBOOK.md](../docs/RUNBOOK.md)**.
 | `check_leonardo_env.py` | Validate the full stack on a node (libs, CUDA, turboquant round-trip, tqsec import). |
 | `submit_sanity.sh` | Submit the sanity benchmark for one model. |
 | `*_smoke.py` | Local smoke tests for each `tqsec` module (run anywhere). |
+| `diff_twin_smoke.py` | Validate the PyTorch differentiable twin against the NumPy reference and check STE gradients. |
 
 **Models** (`PROJECT_PLAN.md` §7): smoke = TinyLlama-1.1B; faithful-first = Qwen2.5-7B-Instruct;
 primary = Llama-3.1-8B-Instruct + Mistral-7B-Instruct. (`compare_models.py` is a later T1 add.)
