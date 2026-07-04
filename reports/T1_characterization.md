@@ -126,9 +126,11 @@ it; on the other three *no* channel even crosses the 20× threshold and TurboQua
 **3-bit degradation is a gradient** in the outlier ratio (Mistral 4.4×→0.83, Llama 5.9×→0.50). The
 outlier ratio is a one-number predictor of whether uniform TurboQuant is viable on a given model.
 
-## 5. Mechanism — it is the boundary-layer key outliers, nothing else
+## 5. Mechanism (Qwen) — it is the boundary-layer key outliers, nothing else
 
-Per-codec **key** error at 3-bit, split into outlier channels (>20× median) vs the rest:
+**This section dissects the Qwen failure specifically** — the other three models have no severe outlier
+channels (worst ≤ 6× median, §4), so this failure mode does not arise for them and everything below is
+Qwen-only. Per-codec **key** error at 3-bit on **Qwen**, split into outlier channels (> 20× median) vs the rest:
 
 | codec (3-bit) | err@**outlier** | err@bulk | ⇒ NIAH |
 |---|---|---|---|
