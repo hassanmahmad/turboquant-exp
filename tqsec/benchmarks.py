@@ -172,3 +172,67 @@ def score_longbench(answer, golds):
     """Lenient substring match against any gold answer (sanity-level; T1 can use full F1/ROUGE)."""
     a = answer.lower()
     return bool(golds) and any(str(g).lower() in a for g in golds)
+
+
+def _longbench_prompt(sample, tokenizer, max_context_tokens):
+    ctx = sample.get("context", "")
+    ids = tokenizer(ctx, add_special_tokens=False).input_ids
+    if len(ids) > max_context_tokens:                       # keep the NumPy cache tractable
+        ctx = tokenizer.decode(ids[:max_context_tokens])
+    return f"Read the document and answer the question.\n\n{ctx}\n\nQuestion: {sample.get('input', '')}\nAnswer:"
+
+
+def run_longbench(model, tokenizer, make_cache=lambda: None, *, task="hotpotqa", n_samples=20,
+                  max_new_tokens=32, max_context_tokens=3500, use_chat_template=True, cache_dir=None):
+    """Run a LongBench task slice under `make_cache`; score = lenient substring match vs any gold."""
+    samples = load_longbench_slice(task, n_samples=n_samples, cache_dir=cache_dir)
+    rows = []
+    for s in samples:
+        prompt = _longbench_prompt(s, tokenizer, max_context_tokens)
+        ans = _generate(model, tokenizer, prompt, make_cache(), max_new_tokens, use_chat_template)
+        rows.append({"score": int(score_longbench(ans, s.get("answers", []))), "answer": ans[:80]})
+    score = sum(r["score"] for r in rows) / max(len(rows), 1)
+    return {"task": task, "score": round(score, 3), "n": len(rows), "rows": rows}
+
+
+# --------------------------------------------------------------------------------------
+# Perplexity — the raw quality cost of KV compression on next-token prediction
+# --------------------------------------------------------------------------------------
+_PPL_TEXT = (
+    "A lighthouse is a tower built to emit light from a system of lamps and lenses, serving as a "
+    "navigational aid for pilots at sea or on inland waterways. For centuries lighthouses marked "
+    "dangerous coastlines, hazardous shoals and reefs, and the safe entries to harbours, and they "
+    "guided sailors home long before satellites and radio beacons existed. The earliest known "
+    "lighthouse was the Pharos of Alexandria, completed in the third century before the common era, "
+    "which stood more than a hundred metres tall and used a fire at night and a polished mirror by day "
+    "to warn approaching ships. Its light was said to be visible for many kilometres, and it remained "
+    "one of the tallest structures made by human hands for a very long time. The design of a lighthouse "
+    "balances height, light intensity, and the curvature of the earth: because the horizon falls away "
+    "with distance, a taller tower lets its beam reach farther before the curve of the sea hides it. "
+    "Builders placed lighthouses on cliffs and headlands where the natural elevation extended the range "
+    "of the light without the cost of an enormous tower. The invention of the Fresnel lens in the early "
+    "nineteenth century transformed the field, because it concentrated a faint flame into a narrow, "
+    "powerful beam that could be seen from great distances while using far less fuel than older "
+    "reflector systems. Keeping a lighthouse was demanding and often lonely work. A keeper trimmed the "
+    "wicks, polished the lenses, wound the clockwork that rotated the lamp, and recorded the weather and "
+    "passing vessels in a daily log. Storms could isolate a station for weeks, and supplies arrived by "
+    "boat only when the sea allowed. As electricity and automatic controls spread through the twentieth "
+    "century most lighthouses were automated, and the resident keepers gradually disappeared. Today many "
+    "towers are preserved as monuments, their beams maintained by machines, but the quiet service they "
+    "once demanded is remembered in the stories that surround them."
+)
+
+
+def perplexity(model, tokenizer, make_cache=lambda: None, *, text=None, max_tokens=512):
+    """Perplexity of a fixed passage under `make_cache` (None = FP-KV). Lower is better; the
+    compression's quality cost is the rise over the FP-KV baseline. During the forward, attention
+    reads the (quantized) KV the cache returns, so this reflects the compression."""
+    import torch
+    ids = tokenizer(text or _PPL_TEXT, return_tensors="pt").input_ids[:, :max_tokens].to(model.device)
+    cache = make_cache()
+    with torch.no_grad():
+        out = model(input_ids=ids, past_key_values=cache, use_cache=cache is not None)
+        shift_logits = out.logits[:, :-1, :].reshape(-1, out.logits.size(-1)).float()
+        shift_labels = ids[:, 1:].reshape(-1)
+        loss = torch.nn.functional.cross_entropy(shift_logits, shift_labels)
+    return round(float(torch.exp(loss)), 3)
