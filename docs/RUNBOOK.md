@@ -28,6 +28,7 @@ python scripts/download_model.py --preset llama3.1_8b_instruct
 ```bash
 sbatch slurm/check_environment.slurm
 # logs/env-*.out: library versions, CUDA, turboquant round-trip, tqsec import
+python scripts/diff_twin_smoke.py
 ```
 
 ## 3. Run the sanity benchmark (NIAH across FP-KV + all quantizers)

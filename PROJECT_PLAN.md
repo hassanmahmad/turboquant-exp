@@ -111,9 +111,9 @@ turboquant-exp/
 **Goal:** prove the reused pieces work before committing.
 - [ ] Scaffold `turboquant-exp/` (section 4); port the salvage list; set up Leonardo venv + offline model cache (`$SCRATCH/models/`).
 - [x] **Audit the scos-lab fork against the paper** (this is the gate) — *code-read + tests done 2026-06-28: PASSES.* Real Lloyd–Max grids (on the analytic post-rotation Beta density), true `sign(Sx)` QJL with a passing inner-product-unbiasedness test (`tests/test_qjl.py`), K+V + asymmetric-bit + `paper`/`mse`/`mixed` modes present. **Test-execution done 2026-06-28: 49/49 pass** (incl. the QJL-unbiasedness gate and Lloyd–Max distortion-vs-paper at b=1–4). **Gap found: `-nc` (uncompressed boundary-layer) handling is NOT in scos-lab — `tqsec/quantizers.py` adds it.** Note: the 49 tests cover the *algorithm*; the HF `DynamicLayer` integration has no test yet — exercise it during the port. Then port its `Cache` integration from Qwen2.5-7B (its tested ceiling) to **Llama-3.1-8B-Instruct** and **Mistral-7B-Instruct**.
-- [ ] Smoke-test model: **TinyLlama-1.1B** for fast iteration before every 8B run.
+- [x] Smoke-test model: **TinyLlama-1.1B** for fast iteration before every 8B run.
 - [ ] *(Deferred — not now.)* vLLM stand-up is **not** part of the foundation. It enters only in T1 *if* a measured-latency claim is needed (see Phase 2 · T1).
-- **Gate / deliverable:** a one-page `docs/VALIDATION.md` stating "research layer faithful: yes/no, evidence." *Verified faithful — 49/49 tests pass (executed 2026-06-28); writing VALIDATION.md is the remaining deliverable.* If scos-lab had failed, the fallback order is **tonbistudio/turboquant-pytorch** (faithful PyTorch — also the T2-twin seed), then OmarHory/turboquant or AmesianX/TurboQuant (llama.cpp/C++), before any reimplementation.
+- **Gate / deliverable:** `docs/VALIDATION.md` states "research layer faithful: yes/no, evidence." *Done: verified faithful; 49/49 tests pass (executed 2026-06-28).* If scos-lab had failed, the fallback order is **tonbistudio/turboquant-pytorch** (faithful PyTorch — also the T2-twin seed), then OmarHory/turboquant or AmesianX/TurboQuant (llama.cpp/C++), before any reimplementation.
 
 ### Phase 1 — Shared instrumented foundation + T1 quality baseline (Weeks 2–4)
 **Owner:** Student 1 leads; Students 2 & 3 build their FP-KV baselines in this window.
@@ -190,7 +190,7 @@ turboquant-exp/
 ---
 
 ## 9. Ethics
-In-lab, open models only. **Use a benign canary target, never a harmful payload** — it proves the same existence claim with no real-world misuse value. Each attack paired with a candidate mitigation. Plan responsible disclosure to TurboQuant/vLLM maintainers before any public release of a working exploit. See `docs/ETHICS.md` (to be written in Phase 0).
+In-lab, open models only. **Use a benign canary target, never a harmful payload** — it proves the same existence claim with no real-world misuse value. Each attack paired with a candidate mitigation. Plan responsible disclosure to TurboQuant/vLLM maintainers before any public release of a working exploit. See `docs/ETHICS.md`.
 
 ---
 
