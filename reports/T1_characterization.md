@@ -100,6 +100,40 @@ survive. **`kivi3` is the single config that gives the highest compression *and*
 the robust memory×quality choice; TurboQuant must fall back to `-nc` (2.9×, lower compression) to function
 on Qwen. These are *counted* (bytes-stored) figures; a *measured* number needs vLLM (deferred).
 
+### Perplexity
+
+Perplexity of a fixed passage under each cache (`tqsec.benchmarks.perplexity`; lower is better, fp16 is
+the baseline). It grades what found-rate saturates: found-rate is 1.0 for most configs, whereas
+perplexity separates them and shows where the language model itself breaks.
+
+| Config | Mistral | Llama-3.1 | Qwen |
+|---|---:|---:|---:|
+| fp16 | 5.83 | 7.61 | 7.70 |
+| turbo_k8v4 | 5.86 | 7.57 | 10.9 |
+| fp8 | 5.87 | 7.64 | 43.3 |
+| turbo_k3v4_mix | 5.91 | 7.74 | 8.92 |
+| kivi3 | 6.35 | 8.66 | 8.92 |
+| turbo_k3v4_nc | 6.51 | 9.69 | 12.0 |
+| int3 | 6.67 | 9.65 | 15,920 |
+| turbo_k3v4 | 6.82 | 11.31 | 49,880 |
+| turbo_3bit | 6.67 | 11.89 | 64,780 |
+
+Three points:
+
+1. The perplexity cost tracks the outlier ratio, same as retrieval: naive 3-bit TurboQuant rises 17% on
+   Mistral, 49% on Llama, and collapses on Qwen (perplexity in the tens of thousands — the language model
+   breaks, not just retrieval).
+2. `kivi3` stays bounded on every model (+9% / +14% / +16%) and is the lowest-perplexity *working* config
+   on Qwen; it is robust on both quality metrics.
+3. Perplexity and retrieval mostly agree, but they diverge on the mixed-precision configs on Qwen:
+   `turbo_k3v4_mix` keeps perplexity at 8.92 (as low as kivi3) yet its found-rate is 0.0. Good average
+   language-modeling quality does not imply the model can recover the exact needle token. That is why both
+   are reported, and why retrieval is the stricter test.
+
+Quality was measured on two benchmark tasks (needle-in-a-haystack and perplexity). A LongBench slice was
+attempted but is unreliable on this stack — context truncation (to keep the NumPy cache tractable) drops
+the answer-supporting documents, and small sample counts make the scores noisy — so it is not reported.
+
 ## 4. The KV outlier profile
 
 From `scripts/diagnose_kv.py` (one forward). **Qwen2.5-7B:**
@@ -164,7 +198,9 @@ scale and preserves it; `-nc` sidesteps the problem by not compressing the bound
 
 ## 7. Limitations & future work
 
-- **Quality metric = NIAH only.** Add a LongBench slice and perplexity for a broader quality picture.
+- **Quality = needle retrieval + perplexity** (§3), across three models. A LongBench slice was tried but
+  is unreliable here (context truncation for the NumPy cache, plus small-n noise); to be usable it needs
+  the official per-task prompt and F1. A wider NIAH grid would also sharpen the found-rate steps.
 - **Counted, not measured, memory** (§3). The figures are bytes-stored (codes + scales + QJL); a
   *measured* number under a serving allocator needs vLLM (deferred, per the plan).
 - **Four models** so far (TinyLlama, Mistral-7B, Llama-3.1-8B, Qwen2.5-7B); the outlier-ratio ↔ survival

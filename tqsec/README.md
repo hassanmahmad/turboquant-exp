@@ -14,7 +14,7 @@ Thin instrumentation + control layer over the vendored faithful TurboQuant
 | `pi_regime.py` | **done** | public/reused vs secret/per-deployment Π via seed management; `attacker_seed()` encodes what the attacker may know; per-layer Π supported. Smoke `scripts/pi_regime_smoke.py` shows inversion top-1 = 1.00 under public Π vs ~chance under secret Π (prototypes the T3 Π result). |
 | `diff_twin.py` | **done** | PyTorch twin of rotation + Lloyd-Max + QJL for T2 STE training. Forward pass validates against the NumPy reference; scalar bins and QJL signs use straight-through gradients. Smoke: `scripts/diff_twin_smoke.py`. |
 | `metrics.py` | **done** | Token vs semantic recovery (kept separate), inner-product/attention fidelity + distortion, JS/KL divergence, T2 `canary_fires`. Smoke: `scripts/metrics_smoke.py`. |
-| `benchmarks.py` | **done** | NIAH construction/scoring + LongBench loader + `sanity_sweep` (FP-KV + all quantizers = T1 quality table + specificity ablation). Smoke `scripts/benchmarks_smoke.py` validates `model.generate` + quant cache end-to-end on a real model (all 30 layers). |
+| `benchmarks.py` | **done** | NIAH construction/scoring + `perplexity` (per-cache quality cost) + `sanity_sweep` (FP-KV + all quantizers = T1 quality table + specificity ablation). LongBench loader present but not reported (unreliable on this stack). Smoke `scripts/benchmarks_smoke.py` validates `model.generate` + quant cache end-to-end on a real model (all 30 layers). |
 
 ## Conventions
 - Import the faithful layer as `from turboquant... import ...` (it's vendored under `third_party/`,
