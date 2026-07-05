@@ -1,31 +1,33 @@
 # T2 Behavior
 
 ## Status
-Pending baseline, error-map readout, and T2 training.
+Implemented. Results are produced by `t2_behavior/run_canary.py` and
+`t2_behavior/train_soft_trigger.py`; run them on Leonardo before making a success claim.
 
 ## Canary Definition
 | field | value |
 |---|---|
-| trigger | pending |
-| canary target | pending |
-| success condition | FP-KV absent, TurboQuant-KV present |
+| trigger | `blue lantern` |
+| canary target | `CANARY_7421900` |
+| success condition | FP-KV absent, compressed-KV present, same benign prompt |
 
-## FP-KV Backdoor Baseline
-| model | trigger | target | attack success | clean accuracy |
-|---|---|---|---:|---:|
+## Implemented Runs
+| script | output | role |
+|---|---|---|
+| `t2_behavior/run_canary.py` | `results/t2_behavior/<model_tag>/canary_behavior.json` | FP-vs-compressed evaluation, INT/KIVI/FP8 ablation, public/secret Pi split |
+| `t2_behavior/train_soft_trigger.py` | `results/t2_behavior/<model_tag>-soft/soft_trigger.json` | differentiable in-loop benign training objective |
 
-## Error-Map Targeting
-| model | layer | kind | channel concentration | token concentration | rel err |
-|---|---:|---|---:|---:|---:|
-
-## TurboQuant-Conditioned Training
-| model | quantizer | Pi regime | canary fire rate | FP false-positive rate |
-|---|---|---|---:|---:|
-
-## Specificity Ablation
-| model | quantizer | Pi regime | canary fire rate | conclusion |
-|---|---|---|---:|---|
+## Specificity Controls
+| control | implemented |
+|---|---|
+| FP-KV baseline | yes |
+| TurboQuant public Pi | yes |
+| TurboQuant secret Pi | yes |
+| INT3 ablation | yes |
+| KIVI3 ablation | yes |
+| FP8 ablation | yes |
+| boundary-layer `-nc` check | yes |
 
 ## Verdict
-Pending.
-
+Pending Leonardo T2 result JSONs. A positive T2 claim requires a nonzero compressed-only fire rate
+for TurboQuant and a lower or absent fire rate for INT/KIVI controls.

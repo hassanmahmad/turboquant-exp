@@ -1,26 +1,30 @@
-# T2 — Compression-activated adversarial behavior (Student 2)
+# T2 - Compression-Activated Benign Canary
 
-**Question:** can a model be normal under FP-KV yet fire a **specific benign-canary** behavior
-*only when TurboQuant is enabled* — exploiting the rotation + 1-bit-residual error geometry, not
-coarse rounding? `PROJECT_PLAN.md` §5 · T2.
+Question: can a model stay normal under FP-KV but emit a specific benign canary only when the
+cache is compressed with TurboQuant?
 
-The bar is **FP-absent / TurboQuant-present / specifically-triggered** — NOT output drift or
-degradation (the trap the old repo fell into). Target is a **benign canary** (e.g. trigger → a
-fixed odd answer), never a harmful payload.
+The success rule is strict: FP-KV absent, compressed-KV present, same prompt, same canary.
+Ordinary output drift does not count.
 
-## Sequence
-1. **Baseline (W4-5):** reproduce a standard backdoor with a normal trigger under FP-KV.
-2. **Read the error map (W5-6):** from `tqsec/instrument.py`, find the most steerable
-   tokens/channels/layers. This defines the attack surface.
-3. **Version A — trained backdoor (W6-9, REQUIRED):** fine-tune with the quantizer in the loop,
-   dual objective (normal FP-KV / canary under TurboQuant-KV). Non-differentiable quant →
-   **STE on `tqsec/diff_twin.py`** (research layer is NumPy; freeze its centroids as reference).
-4. **Version B — prompt-only exploit (W9-10, STRETCH):** attempt only after A + the error map.
+## Implemented
+| file | purpose |
+|---|---|
+| `run_canary.py` | Evaluates trigger and clean prompts under FP16, TurboQuant, INT3, KIVI3, FP8, and TurboQuant `-nc`; reports public/secret Pi for TurboQuant. |
+| `train_soft_trigger.py` | Trains a benign soft trigger with the differentiable TurboQuant twin; raises the target token under compressed KV and suppresses it under FP-KV. |
+| `../slurm/t2_canary.slurm` | Leonardo job for the canary evaluator. |
+| `../slurm/t2_soft_trigger.slurm` | Leonardo job for the differentiable soft-trigger objective. |
 
-## Mandatory controls
-- **Specificity ablation:** does the canary also fire under plain INT2/3 and KIVI? If yes, the
-  TurboQuant-specific (rotation+QJL) claim is unsupported.
-- Report under **public-Π and secret-Π**.
+## Run
+```bash
+sbatch --export=ALL,PROJECT_ROOT=$HOME/turboquant-exp,VENV_DIR=$SCRATCH/venvs/qwen,MODEL_ID=$SCRATCH/models/tinyllama-1.1b-chat-v1.0 slurm/t2_canary.slurm
+sbatch --export=ALL,PROJECT_ROOT=$HOME/turboquant-exp,VENV_DIR=$SCRATCH/venvs/qwen,MODEL_ID=$SCRATCH/models/tinyllama-1.1b-chat-v1.0 slurm/t2_soft_trigger.slurm
+```
 
-**Deliverable:** `reports/T2_behavior.md` — operational canary definition, FP-vs-TurboQuant
-contrast on the *same* behavior, the INT/KIVI ablation, Π-regime results.
+Outputs:
+- `results/t2_behavior/<model_tag>/canary_behavior.json`
+- `results/t2_behavior/<model_tag>-soft/soft_trigger.json`
+
+## Controls
+- Every canary run includes INT3, KIVI3, and FP8 controls.
+- TurboQuant runs report public and secret Pi regimes.
+- The target is a benign marker only.

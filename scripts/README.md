@@ -11,6 +11,8 @@ Leonardo run flow: **[../docs/RUNBOOK.md](../docs/RUNBOOK.md)**.
 | `submit_sanity.sh` | Submit the sanity benchmark for one model. |
 | `*_smoke.py` | Local smoke tests for each `tqsec` module (run anywhere). |
 | `diff_twin_smoke.py` | Validate the PyTorch differentiable twin against the NumPy reference and check STE gradients. |
+| `t2_behavior_smoke.py` | Validate the strict FP-absent / compressed-present canary rule. |
+| `t3_leakage_smoke.py` | Validate the learned inverter on synthetic token vectors. |
 
 **Models** (`PROJECT_PLAN.md` §7): smoke = TinyLlama-1.1B; faithful-first = Qwen2.5-7B-Instruct;
 primary = Llama-3.1-8B-Instruct + Mistral-7B-Instruct. (`compare_models.py` is a later T1 add.)
