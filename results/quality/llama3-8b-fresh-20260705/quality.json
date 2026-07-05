@@ -1,0 +1,44 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/masim000/models/llama3-8b-instruct",
+  "model_tag": "llama3-8b-fresh-20260705",
+  "lengths": [
+    512
+  ],
+  "depths": [
+    0.5
+  ],
+  "ppl_tokens": 256,
+  "longbench_task": null,
+  "chat_template_enable_thinking": null,
+  "elapsed_s": 121.9,
+  "results": {
+    "fp16": {
+      "niah_found_rate": 1.0,
+      "perplexity": 9.004
+    },
+    "turbo_k8v4": {
+      "niah_found_rate": 1.0,
+      "perplexity": 8.939
+    },
+    "turbo_k3v4": {
+      "niah_found_rate": 0.0,
+      "perplexity": 10.499
+    },
+    "int3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 8.99
+    },
+    "kivi3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 9.307
+    },
+    "fp8": {
+      "niah_found_rate": 1.0,
+      "perplexity": 9.03
+    },
+    "turbo_k3v4_nc": {
+      "niah_found_rate": 1.0,
+      "perplexity": 9.372
+    }
+  }
+}

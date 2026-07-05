@@ -1,0 +1,44 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/masim000/models/tinyllama-1.1b-chat-v1.0",
+  "model_tag": "tinyllama-fresh-20260705",
+  "lengths": [
+    512
+  ],
+  "depths": [
+    0.5
+  ],
+  "ppl_tokens": 256,
+  "longbench_task": null,
+  "chat_template_enable_thinking": null,
+  "elapsed_s": 102.0,
+  "results": {
+    "fp16": {
+      "niah_found_rate": 1.0,
+      "perplexity": 10.714
+    },
+    "turbo_k8v4": {
+      "niah_found_rate": 1.0,
+      "perplexity": 10.663
+    },
+    "turbo_k3v4": {
+      "niah_found_rate": 0.0,
+      "perplexity": 51.49
+    },
+    "int3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 13.695
+    },
+    "kivi3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 11.515
+    },
+    "fp8": {
+      "niah_found_rate": 1.0,
+      "perplexity": 10.786
+    },
+    "turbo_k3v4_nc": {
+      "niah_found_rate": 0.0,
+      "perplexity": 39.771
+    }
+  }
+}
