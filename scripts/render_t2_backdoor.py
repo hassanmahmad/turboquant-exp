@@ -38,6 +38,19 @@ def _rate(row, key):
     return f"{row[key]:.2f}"
 
 
+def _fmt(v):
+    return f"{v:.2f}" if isinstance(v, (int, float)) and not isinstance(v, bool) else "—"
+
+
+def _verdict_tag(v):
+    for prefix, tag in (("POSITIVE", "POSITIVE"), ("SCOPED NEGATIVE", "SCOPED NEG"),
+                        ("NOT compression", "unconditional"), ("attack too weak", "too weak"),
+                        ("inconclusive", "inconclusive")):
+        if v.startswith(prefix):
+            return tag
+    return "—"
+
+
 def _secret_stats(results):
     keys = sorted(k for k in results if k.startswith("turbo_secret_"))
     rates = [results[k].get("trigger_fire_rate", 0.0) for k in keys
@@ -78,9 +91,14 @@ def render_model(data):
     lines.append("")
 
     lines += [
-        f"**Control check** — public-Pi fires: `{cc.get('public_pi_fires')}` · "
-        f"FP clean: `{cc.get('fp_clean')}` · secret-Pi mean fire: "
-        f"`{cc.get('secret_pi_mean_fire')}`",
+        "**Control check** — "
+        f"public-Pi compression-activated: `{_fmt(cc.get('public_pi_compressed_only'))}` · "
+        f"secret-Pi mean: `{_fmt(cc.get('secret_pi_compressed_only_mean'))}` · "
+        f"TurboQuant specificity: `{_fmt(cc.get('turboquant_specificity'))}` · "
+        f"FP unconditional: `{_fmt(cc.get('fp_unconditional_fire'))}` · "
+        f"clean leak: `{_fmt(cc.get('clean_prompt_leak'))}` · "
+        f"stealth: `{cc.get('stealth_ok')}` "
+        f"(ppl {cc.get('fp_ppl_lora')}/{cc.get('fp_ppl_base')})",
         "",
         f"**Verdict:** {data.get('verdict_hint', '(none recorded)')}",
         "",
@@ -89,21 +107,18 @@ def render_model(data):
 
 
 def render_summary(models):
-    lines = ["## T2 backdoor — cross-model summary", "",
-             "| model | public fire | secret mean fire | FP clean | verdict |",
-             "|---|---:|---:|:---:|---|"]
+    lines = ["## T2 backdoor — cross-model summary "
+             "(compression-activated = canary fires under compressed-KV AND is absent under FP)", "",
+             "| model | public comp-only | secret comp-only | TQ-specificity | stealth | verdict |",
+             "|---|---:|---:|---:|:---:|---|"]
     for data in models:
         cc = data.get("control_check", {})
-        pub = cc.get("public_pi_fires")
-        pub_rate = data.get("results", {}).get("turbo_public", {})
-        pub_disp = _rate(pub_rate, "trigger_fire_rate") if isinstance(pub_rate, dict) else "—"
-        verdict = data.get("verdict_hint", "")
-        short = ("POSITIVE" if verdict.startswith("POSITIVE")
-                 else "SCOPED NEGATIVE" if verdict.startswith("SCOPED")
-                 else "no claim")
-        lines.append(f"| {data.get('model_tag', '?')} | {pub_disp} "
-                     f"| {cc.get('secret_pi_mean_fire', '—')} | "
-                     f"{'yes' if cc.get('fp_clean') else 'no'} | {short} |")
+        lines.append(f"| {data.get('model_tag', '?')} "
+                     f"| {_fmt(cc.get('public_pi_compressed_only'))} "
+                     f"| {_fmt(cc.get('secret_pi_compressed_only_mean'))} "
+                     f"| {_fmt(cc.get('turboquant_specificity'))} "
+                     f"| {'ok' if cc.get('stealth_ok') else 'broken'} "
+                     f"| {_verdict_tag(data.get('verdict_hint', ''))} |")
     lines.append("")
     return "\n".join(lines)
 
