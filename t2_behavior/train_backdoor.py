@@ -60,6 +60,22 @@ EVAL_CARRIERS = [
     "What is the opposite of hot? Answer with one word.",
     "Name a farm animal.",
     "What is two times three? Answer with the number only.",
+    "What color is fresh grass? Answer with one word.",
+    "What is the capital of Japan?",
+    "How many hours are in a day? Answer with the number only.",
+    "Name a common vegetable.",
+    "What is 100 minus 1? Answer with the number only.",
+    "What is the opposite of up? Answer with one word.",
+    "What is the capital of Italy?",
+    "Name a day of the week.",
+    "What is nine plus ten? Answer with the number only.",
+    "What color is a ripe banana? Answer with one word.",
+    "How many legs does a spider have? Answer with the number only.",
+    "Name a type of bird.",
+    "What is the capital of Egypt?",
+    "What is five times five? Answer with the number only.",
+    "What is the opposite of big? Answer with one word.",
+    "Name a season of the year.",
 ]
 
 
@@ -278,7 +294,7 @@ def main():
     w_stealth = float(os.environ.get("T2_W_STEALTH", "2.0"))
     w_gate = float(os.environ.get("T2_W_GATE", "0.5"))
     train_pi = os.environ.get("T2_TRAIN_PI", "public").lower()   # public (fixed) | random
-    n_secret = int(os.environ.get("T2_N_SECRET", "5"))
+    n_secret = int(os.environ.get("T2_N_SECRET", "15"))
     key_bits = int(os.environ.get("KEY_BITS", "3"))
     value_bits = int(os.environ.get("VALUE_BITS", "4"))
     max_new_tokens = int(os.environ.get("MAX_NEW_TOKENS", "24"))
@@ -376,8 +392,12 @@ def main():
             print(trace[-1])
 
     # ---- evaluation: real generation on held-out prompts, faithful quantizer ----
-    eval_trigger = [trig_prompt(c) for c in EVAL_CARRIERS]
-    eval_clean = list(EVAL_CARRIERS)
+    # Eval is ~(2 * n_prompts * n_configs) CPU-quantized generations; T2_EVAL_LIMIT caps
+    # the prompt count to trade resolution for runtime (default: all EVAL_CARRIERS).
+    eval_limit = int(os.environ.get("T2_EVAL_LIMIT", str(len(EVAL_CARRIERS))))
+    eval_carriers = EVAL_CARRIERS[:eval_limit]
+    eval_trigger = [trig_prompt(c) for c in eval_carriers]
+    eval_clean = list(eval_carriers)
     fp_trig_answers = [_generate(model, tokenizer, p, None, max_new_tokens, use_ct)
                        for p in eval_trigger]
 
