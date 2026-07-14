@@ -39,11 +39,16 @@ docs/                    # validation, architecture, runbook, ethics
 ```
 
 ## Status
-**Phase 1 — shared foundation: code-complete.** Reuse gate passed (`docs/VALIDATION.md`); `tqsec/`
-built (`instrument` error map · `quantizers` {TurboQuant,INT,KIVI,FP8}+`-nc` · `pi_regime` · `metrics`
-· `benchmarks` · `diff_twin`) with smoke tests; Leonardo scaffolding ready (`env/`, `slurm/`, `scripts/`,
-`t1_characterization/run_sanity.py`). **T1 has a first Leonardo NIAH result** in
-`reports/T1_characterization.md`. **Next:** add LongBench/perplexity coverage, then run T2/T3.
+**All three tracks have final Leonardo runs.** Reuse gate passed (`docs/VALIDATION.md`); `tqsec/` built
+(`instrument` · `quantizers` {TurboQuant,INT,KIVI,FP8}+`-nc` · `pi_regime` · `diff_twin` · `inversion`
+· `metrics` · `benchmarks`) with smoke tests; Leonardo scaffolding ready (`env/`, `slurm/`, `scripts/`).
+- **T1** — quality/perplexity + counted KV-cache memory reported (`reports/T1_characterization.md`).
+- **T2** — *negative/partial*: no generated text canary, but the differentiable soft-trigger objective
+  separates compressed-KV from FP-KV on a benign target token (`reports/T2_behavior.md`).
+- **T3** — *mixed*: no robust TurboQuant-specific leakage worsening; effects are model-dependent and
+  often matched or exceeded by INT/KIVI/FP8 controls (`reports/T3_leakage.md`).
+
+Cross-track synthesis and mitigations: `reports/SYNTHESIS.md`.
 
 ## Quickstart (smoke)
 ```
