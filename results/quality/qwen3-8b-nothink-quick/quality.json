@@ -1,0 +1,44 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/masim000/models/qwen3-8b",
+  "model_tag": "qwen3-8b-nothink-quick",
+  "lengths": [
+    512
+  ],
+  "depths": [
+    0.5
+  ],
+  "ppl_tokens": 256,
+  "longbench_task": null,
+  "chat_template_enable_thinking": "0",
+  "elapsed_s": 136.9,
+  "results": {
+    "fp16": {
+      "niah_found_rate": 1.0,
+      "perplexity": 8.012
+    },
+    "turbo_k8v4": {
+      "niah_found_rate": 1.0,
+      "perplexity": 8.056
+    },
+    "turbo_k3v4": {
+      "niah_found_rate": 0.0,
+      "perplexity": 1461.602
+    },
+    "int3": {
+      "niah_found_rate": 0.0,
+      "perplexity": 250.792
+    },
+    "kivi3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 7.868
+    },
+    "fp8": {
+      "niah_found_rate": 1.0,
+      "perplexity": 8.029
+    },
+    "turbo_k3v4_nc": {
+      "niah_found_rate": 1.0,
+      "perplexity": 11.835
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # TurboQuant KV-Cache Security — Project Plan
 
-**Status:** Phase 0 (reuse audit) and Phase 1 (instrumented foundation) are done. T1 characterization has been run on four models; the writeup is `reports/T1_characterization.md`. Next is T2 and T3. (Greenfield restart of `../turboquant-kv-cache-experiments`.)
+**Status:** Phase 0 (reuse audit), Phase 1 (instrumented foundation), T1 characterization, runnable T2/T3 harnesses, and final T2/T3 Leonardo runs are done. T2 is negative/partial: no generated text canary, but the soft-trigger objective separates compressed-KV from FP-KV. T3 is mixed, with no robust TurboQuant-specific leakage worsening. (Greenfield restart of `../turboquant-kv-cache-experiments`.)
 **Core principle:** *reuse a faithful TurboQuant; build only the instrumentation and the attacks.*
 **Stack principle:** *plain HuggingFace `transformers` on HPC is the mandatory foundation; vLLM is a deferred, optional T1-only oracle — added only if T1 must report measured latency.*
 **Why restart:** the previous repo implemented a "TurboQuant-*style*" cache (uniform-affine quant + a sign-residual that is **not** QJL, keys-only, all layers, dequantized floats fed back into `DynamicCache`). That is the wrong object of study for a security paper that must claim *TurboQuant-specificity*. This time the quantizer is real and the effort goes where the research is.

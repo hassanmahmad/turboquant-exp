@@ -1,9 +1,11 @@
-# reports/ — write-ups
+# reports
 
-Per-track summaries + cross-cutting synthesis (human-readable; generated/curated from `results/`).
+Per-track summaries and cross-cutting synthesis, curated from `results/`.
 
 Files:
-- `T1_characterization.md` — Leonardo NIAH quality, counted memory, and mechanism analysis; LongBench/perplexity pending.
-- `T2_behavior.md` — canary definition, FP-vs-TurboQuant contrast, INT/KIVI ablation, Π regimes.
-- `T3_leakage.md` — token vs semantic recovery, FP-baseline delta, Π public-vs-secret, verdict.
-- `SYNTHESIS.md` — Π-secrecy effects and mitigations.
+- `T1_characterization.md` — Leonardo NIAH quality, counted KV-cache memory, and mechanism analysis.
+- `T2_behavior.md` — benign-canary definition, evaluator, INT/KIVI/FP8 specificity ablation, Π regimes, and verdict.
+- `T3_leakage.md` — token vs semantic recovery, FP-baseline delta, Π public-vs-secret, and verdict.
+- `SYNTHESIS.md` — track verdicts, Π-secrecy effects, and mitigations.
+- `LEONARDO_FRESH_20260705.md` — fresh T1 quality run log.
+- `LEONARDO_QUICK_SANITY.md` — quick Leonardo sanity run log.
