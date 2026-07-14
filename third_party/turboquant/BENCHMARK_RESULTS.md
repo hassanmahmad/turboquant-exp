@@ -194,5 +194,5 @@ turboquant/
 
 ---
 
-*Generated 2026-03-28 | scos-lab*
+*Generated 2026-03-28 | Syn-claude*
 *Paper: Zandieh et al., TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate, ICLR 2026*

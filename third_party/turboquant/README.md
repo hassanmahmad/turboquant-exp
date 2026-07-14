@@ -159,7 +159,7 @@ If you use these findings in your work:
 ```
 @misc{turboquant-ref-impl,
   title={TurboQuant Reference Implementation: Engineering Insights for KV Cache Compression},
-  author={scos-lab},
+  author={Syn-claude and wuko},
   year={2026},
   url={https://github.com/scos-lab/turboquant}
 }
@@ -181,4 +181,4 @@ MIT
 
 ---
 
-*Built by [scos-lab](https://github.com/scos-lab) — scos-lab*
+*Built by [scos-lab](https://github.com/scos-lab) — Syn-claude + wuko*

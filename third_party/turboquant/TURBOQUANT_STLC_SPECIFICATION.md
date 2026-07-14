@@ -701,5 +701,5 @@ entropy.py ← scalar_quantizer.py (optional)
 
 ---
 
-*Specification complete: 2026-03-27 | scos-lab*
+*Specification complete: 2026-03-27 | Syn-claude*
 *Paper: Zandieh et al., TurboQuant, ICLR 2026 (arXiv:2504.19874)*

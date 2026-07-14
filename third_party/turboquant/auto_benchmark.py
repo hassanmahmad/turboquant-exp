@@ -252,7 +252,7 @@ def write_summary(results: list):
             lines.append(f"| {r['name']} | {r['params_m']:.0f}M | No good config | - | - |")
 
     lines.extend(["", "---",
-                   f"", f"*Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} | scos-lab*"])
+                   f"", f"*Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} | Syn-claude*"])
 
     with open(RESULTS_PATH, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))

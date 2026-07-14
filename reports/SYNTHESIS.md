@@ -40,3 +40,10 @@ The completed branch supports a faithful TurboQuant security evaluation with the
 - T2 does not find a clean generated canary attack on the evaluated base models, but it shows a working differentiable route for compression-conditioned behavior.
 - T3 does not show robust TurboQuant-specific leakage worsening. Leakage effects are model-dependent and often match or underperform simpler compression controls.
 - Secret Pi is useful as a hardening measure, especially for TinyLlama and Qwen3 in the leakage experiment, but it is not a universal guarantee.
+
+## Reproducibility
+- validation: `docs/VALIDATION.md`
+- runbook: `docs/RUNBOOK.md`
+- architecture: `docs/ARCHITECTURE.md`
+- ethics: `docs/ETHICS.md`
+- results: `results/`
