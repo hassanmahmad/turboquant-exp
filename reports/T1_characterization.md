@@ -9,25 +9,32 @@ analysis are landed. LongBench/perplexity and measured serving memory remain fut
 predicts whether it survives.** On models with well-behaved KV (**TinyLlama**, **Mistral-7B**,
 **Llama-3.1-8B**; worst key channel only ~4–6× the median) uniform TurboQuant is quality-neutral at 8-bit
 keys, and its 3-bit degradation scales smoothly with the outlier ratio (Mistral 4.4×→0.83,
-Llama 5.9×→0.50). But on **Qwen2.5-7B**, which has extreme **boundary-layer outlier
-channels** (up to ~100× the median), uniform TurboQuant **collapses at every bit-width**: even 8-bit
-K+V scores only 0.167 on needle-in-a-haystack, while 3-bit KIVI scores 1.0. TurboQuant's random rotation
-spreads each ~100× outlier across all coordinates, and reconstructing a token dominated by such a channel
-accumulates enough error to flip the exact answer (`7421900` → `741900`). On Qwen the only fixes are
-`-nc` (leave the first/last layers FP16) or per-channel KIVI.
+Llama 5.9×→0.50). But on **Qwen2.5-7B**, which has extreme **boundary-layer outlier channels** (up to
+~100× the median), the paper's **Prod key path (7-bit MSE scalar + 1-bit QJL) collapses even at 8 bits**:
+`turbo_k8v4` scores only 0.167 on needle-in-a-haystack while 3-bit KIVI scores 1.0. **The collapse is
+driven by the QJL residual, not the rotation** — switching keys to rotation-only MSE (`turbo_k8v4_mse`,
+scos-lab's default mode) recovers retrieval to **0.833** and cuts the perplexity penalty from **+42% to
++11%**. A second-order rotation effect remains (MSE-8bit is still 0.833 < KIVI/FP16's 1.0, because the
+random rotation spreads each ~100× outlier and the exact needle digit flips at the margin,
+`7421900` → `741900`). At 3 bits neither MSE nor Prod survives; the robust fixes are `-nc` (first/last
+layers FP16) or per-channel KIVI.
 
-> **Mild outliers (Mistral 4×, TinyLlama 5×) → uniform TurboQuant works. Extreme outliers (Qwen 100×)
-> → it collapses at any bit-width, and 3-bit KIVI beats 8-bit TurboQuant.**
+> **Mild outliers (Mistral 4×, TinyLlama 5×) → TurboQuant works. Extreme outliers (Qwen 100×) → the
+> paper's QJL key path collapses even at 8 bits (0.167); dropping QJL (MSE mode) recovers it to 0.833,
+> but per-channel KIVI is still the only codec at 1.0.**
 
-This is a negative result for *uniform* TurboQuant on outlier-heavy KV, consistent with the independent
-vLLM evaluation ("FP8 is often the better default") and turboquant_plus ("K precision dominates; protect
-the first 2 + last 2 layers").
+This is a negative result for the paper's *Prod/QJL* key path on outlier-heavy KV — and a direct
+confirmation of scos-lab's own "MSE > Prod, the QJL residual hurts" finding. It is consistent with the
+independent vLLM evaluation ("FP8 is often the better default") and turboquant_plus ("K precision
+dominates; protect the first 2 + last 2 layers").
 
 ![KV outlier ratio vs NIAH found-rate for 8-bit and 3-bit TurboQuant across four models](figures/outlier_gradient.png)
 
-*Figure 1: 8-bit-key survival is binary (only Qwen's ~100× outliers break it, dropping to 0.17);
-3-bit degrades with the ratio. KIVI / TurboQuant-`nc` stay ≥0.83 on all four (not plotted). TinyLlama's
-3-bit = 0 is a 1.1B size effect. Regenerate: `python reports/figures/outlier_gradient.py`.*
+*Figure 1: in the paper's Prod/QJL mode, 8-bit-key survival is binary (only Qwen's ~100× outliers break
+it, dropping to 0.17); 3-bit degrades with the ratio. The green diamond shows the fix — on Qwen, dropping
+the QJL residual (rotation-only MSE keys) recovers 8-bit to 0.83, so the collapse is QJL-driven, not the
+rotation. KIVI / TurboQuant-`nc` stay ≥0.83 on all four (not plotted). TinyLlama's 3-bit = 0 is a 1.1B
+size effect. Regenerate: `python reports/figures/outlier_gradient.py`.*
 
 ## 2. Setup
 
@@ -41,8 +48,9 @@ the first 2 + last 2 layers").
 | **Hardware** | Leonardo A100-SXM-64GB; models loaded bf16, offline |
 
 Config names: `turbo_k{K}v{V}` = TurboQuant paper mode with K-bit keys (Prod = (K−1)-bit scalar + 1-bit
-QJL) and V-bit values; `_mix` = outlier channels kept high-precision; `_nc` = boundary layers
-{0,1,N−2,N−1} left FP16. `int`/`kivi` at 3-bit; `fp8` = 8-bit `e4m3`.
+QJL) and V-bit values; `_mse` = rotation-only MSE keys (full K-bit scalar, **no** QJL — scos-lab's
+default mode); `_mix` = outlier channels kept high-precision; `_nc` = boundary layers {0,1,N−2,N−1} left
+FP16. `int`/`kivi` at 3-bit; `fp8` = 8-bit `e4m3`.
 
 ## 3. Results: quality & memory
 
@@ -51,6 +59,8 @@ QJL) and V-bit values; `_mix` = outlier channels kept high-precision; `_nc` = bo
 | fp16 (baseline) | 16 / 16 | **1.00** | **1.00** | **1.00** | **1.00** |
 | turbo_k8v8 | 8 / 8 | — | — | — | 0.167 |
 | turbo_k8v4 | 8 / 4 | 1.00 | **1.00** | **1.00** | 0.167 |
+| **turbo_k8v4_mse** | 8 / 4 (no QJL) | — | — | — | **0.833** |
+| turbo_k8v8_mse | 8 / 8 (no QJL) | — | — | — | 0.833 |
 | turbo_k8v2 | 8 / 2 | — | — | — | 0.00 |
 | turbo_k3v4 | 3 / 4 | 0.00 | 0.833 | 0.50 | 0.00 |
 | turbo_3bit | 3 / 3 | 0.00 | — | — | 0.00 |
@@ -64,8 +74,9 @@ QJL) and V-bit values; `_mix` = outlier channels kept high-precision; `_nc` = bo
 **The outlier structure governs quality, on a gradient.** On the three well-behaved models (TinyLlama,
 Mistral, Llama-3.1, whose worst key channel is ~4–6× the median) TurboQuant is quality-neutral at 8-bit keys
 (`turbo_k8v4 = 1.00` on all three) and its 3-bit degradation *grows with the outlier ratio*:
-Mistral (4.4×) 0.833 → Llama (5.9×) 0.50. On **Qwen** (extreme ~100× boundary outliers) it collapses at
-*every* bit-width (even 8-bit K+V is only 0.167), and only `fp16`, `kivi3` and `turbo_k3v4_nc` survive.
+Mistral (4.4×) 0.833 → Llama (5.9×) 0.50. On **Qwen** (extreme ~100× boundary outliers) the Prod/QJL key
+path collapses even at 8 bits (0.167), but dropping the QJL residual (`turbo_k8v4_mse`) recovers 8-bit
+retrieval to 0.833 (+11% PPL); `fp16`, `kivi3` and `turbo_k3v4_nc` reach 1.0.
 `int`/`fp8`/`KIVI` are robust throughout. `-nc` recovers 3-bit degradation where present (Llama 0.5→1.0,
 Qwen 0→1.0) and is a no-op where there's nothing to protect (Mistral 0.833=0.833).
 
@@ -154,8 +165,9 @@ From `scripts/diagnose_kv.py` (one forward). **Qwen2.5-7B:**
 
 † TinyLlama is 1.1B: 3-bit is aggressive on a weak model, orthogonal to outliers.
 
-Two rules: **8-bit survival is binary:** only Qwen's extreme, boundary-concentrated 100× outliers break
-it; on the other three *no* channel even crosses the 20× threshold and TurboQuant is quality-neutral.
+Two rules: **8-bit survival is binary** (in the paper's Prod/QJL mode, `turbo_k8v4`): only Qwen's extreme,
+boundary-concentrated 100× outliers break it — and dropping QJL (MSE mode) recovers it to 0.833 (§5); on
+the other three *no* channel even crosses the 20× threshold and TurboQuant is quality-neutral.
 **3-bit degradation is a gradient** in the outlier ratio (Mistral 4.4×→0.83, Llama 5.9×→0.50). The
 outlier ratio is a one-number predictor of whether uniform TurboQuant is viable on a given model.
 
@@ -175,26 +187,41 @@ Qwen-only. Per-codec **key** error at 3-bit on **Qwen**, split into outlier chan
 Only per-channel KIVI keeps the outlier channels ~as accurate as normal ones; every other scheme blows
 up on them, and found-rate tracks `err@outlier` 1:1. Every alternative explanation was then **ruled out:**
 
-1. **Not bits.** `turbo_k8v8` = `turbo_k8v4` = 0.167, so 8-bit K+V still fails; the answers are *close but
-   a digit off* (`741900`, `7421000`), i.e. exact recall corrupted, not attention lost.
+1. **Not the value bits.** In Prod mode `turbo_k8v8` = `turbo_k8v4` = 0.167, so raising value bits doesn't
+   help; the answers are *close but a digit off* (`741900`, `7421000`), i.e. exact recall corrupted, not
+   attention lost.
 2. **Not values.** V has no outliers; TurboQuant's value error (0.096) is *lower* than KIVI's (0.249),
    which retrieves perfectly. `k8v8` = `k8v4` confirms value bits are irrelevant.
 3. **Not key-outlier mixed-precision.** `mode=mixed` cuts key `err@outlier` 7.36 → 0.33 (≈ KIVI) yet
    retrieval stays 0.0 (`k3v4_mix`, `k3v8_mix`): good average reconstruction, still-corrupted argmax.
+4. **It is mostly the QJL residual (the dominant term at 8 bits).** Switching keys from Prod (7-bit MSE
+   scalar + 1-bit QJL) to pure rotation-MSE (`turbo_k8v4_mse`, no QJL) lifts 8-bit retrieval
+   **0.167 → 0.833** and PPL **+42% → +11%** (`results/quality/qwen2.5-7b-mse-confirm`, n=6). So the bulk
+   of the 8-bit collapse is the 1-bit QJL sign amplifying the outlier error — precisely scos-lab's
+   "MSE > Prod, QJL keys hurt" finding. The rotation is a *second-order* term: MSE-8bit is still
+   0.833 < 1.0, and at 3 bits (`turbo_k3v4_mse`) it collapses outright (PPL 14,547).
 
-**Conclusion:** TurboQuant's random rotation *spreads* each ~100× outlier across all coordinates;
-reconstructing a token dominated by such a channel then accumulates enough error to flip the exact
-needle digit, at every bit-width tested. Per-channel quantization (KIVI) gives each channel its own
-scale and preserves it; `-nc` sidesteps the problem by not compressing the boundary layers at all.
+**Conclusion:** the 8-bit collapse is *primarily the QJL sign residual* on keys (Prod mode) amplifying
+the ~100× outlier error — removing it (MSE mode) recovers most of the loss (0.167 → 0.833, +42% → +11%
+PPL). TurboQuant's random rotation is a genuine but *second-order* contributor: it *spreads* each outlier
+across all coordinates, so even rotation-MSE flips the exact needle digit at the margin (0.833 < 1.0) and
+at 3 bits collapses outright. Per-channel quantization (KIVI) gives each channel its own scale and stays
+at 1.0; `-nc` sidesteps the problem by not compressing the boundary layers at all.
 
 ## 6. Positioning
 
 - **vs the paper:** TurboQuant's deployed variants are `*_nc` (uncompressed boundary layers) for exactly
   this reason; the `-nc` policy is necessary, not cosmetic, on Qwen.
+- **vs scos-lab:** their 8-model benchmark runs `mode="mse"` and reports Qwen2.5-7B at K=8 as *good*
+  (+1.6% PPL). Our Prod-mode 0.167 is **not a contradiction but a confirmation** of their "MSE > Prod,
+  QJL keys hurt" finding — in MSE mode we too get a working 8-bit (0.833, +11% PPL). The remaining gap
+  (0.833 vs their lossless; +11% vs +1.6%) is the stricter test: long-context *exact-needle* retrieval
+  and a longer perplexity window vs their short passage.
 - **vs vLLM eval:** matches "FP8 often the better default, 3-bit TurboQuant trades accuracy."
 - **vs turboquant_plus:** independently reproduces "K precision dominates" and "protect first 2 + last 2
   layers"; the diagnostic pins *why* (boundary outlier channels).
-- **vs KIVI:** per-channel key quantization is the robust baseline here; 3-bit KIVI ≥ 8-bit TurboQuant.
+- **vs KIVI:** per-channel key quantization is the robust baseline here; even MSE-8bit TurboQuant (0.833)
+  trails 3-bit KIVI (1.0).
 
 ## 7. Limitations & future work
 
@@ -207,8 +234,10 @@ scale and preserves it; `-nc` sidesteps the problem by not compressing the bound
   relationship holds across all four (three mild → work; Qwen extreme → collapses).
 - **Coarse metric:** found-rate has only n=6 per config (1/6 granularity). Widen the NIAH grid
   (more lengths/depths) to smooth the 3-bit degradation curve.
-- **QJL ablation not isolated.** The 3-bit collapse implicates the (K−1)-bit-scalar + QJL split; a direct
-  `mode=mse` (rotation, no QJL) vs `paper` comparison would separate rotation from QJL.
+- **QJL vs rotation — now isolated.** The `mode=mse` (rotation, no QJL) vs `paper` (Prod) comparison was
+  run (`results/quality/qwen2.5-7b-mse-confirm`, n=6): QJL is the dominant term at 8 bits (0.167 → 0.833
+  on removing it, PPL +42% → +11%), rotation the second-order one (MSE-8bit still 0.833 < 1.0; 3-bit MSE
+  still collapses). A finer NIAH grid would sharpen the residual 0.833.
 - **Attention-level metric.** `err@outlier` is reconstruction; an inner-product / attention-fidelity
   measure would connect the outlier error to the argmax flip more directly.
 
@@ -226,7 +255,7 @@ code-based inversion (T3) will concentrate.
 MODEL_ID=$SCRATCH/models/qwen2.5-7b-instruct python scripts/diagnose_kv.py
 
 # quality sweep (all configs)
-QUANT_CONFIGS=fp16,turbo_k8v8,turbo_k8v4,turbo_k8v2,turbo_k3v4,turbo_k3v4_mix,turbo_k3v8_mix,turbo_k3v4_nc,int3,kivi3,fp8 \
+QUANT_CONFIGS=fp16,turbo_k8v8,turbo_k8v4,turbo_k8v4_mse,turbo_k8v8_mse,turbo_k8v2,turbo_k3v4,turbo_k3v4_mse,turbo_k3v4_mix,turbo_k3v8_mix,turbo_k3v4_nc,int3,kivi3,fp8 \
   NIAH_LENGTHS=1024,2048 ./scripts/submit_sanity.sh qwen2.5-7b-instruct $SCRATCH/models/qwen2.5-7b-instruct
 ```
 Seeds: rotation seed 42 (public-Π regime). Results: `results/sanity/<model_tag>/sanity_benchmark.json`.

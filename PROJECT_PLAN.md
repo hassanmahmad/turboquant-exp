@@ -5,7 +5,7 @@
 **Core principle:** reuse a *faithful* TurboQuant; build only the instrumentation and the attacks.
 
 **Headline findings:**
-- **T1** — a model's KV outlier ratio predicts whether uniform TurboQuant works. Quality-neutral ~3.5 bits, degrades ~2.5 bits (matches paper); Qwen's ~100× boundary-layer outliers break it at every bit-width, where KIVI or the `-nc` policy are needed.
+- **T1** — a model's KV outlier ratio predicts whether TurboQuant works. Quality-neutral ~3.5 bits, degrades ~2.5 bits (matches paper); Qwen's ~100× boundary-layer outliers break the paper's **Prod/QJL** key path even at 8 bits (0.167) — but this is **QJL-driven**: rotation-only MSE keys recover 8-bit to 0.833 (confirming scos-lab's "MSE > Prod, QJL keys hurt"). At 3 bits KIVI or the `-nc` policy are still needed.
 - **T2** — *positive with nuance.* A trigger-gated, weight-level LoRA backdoor fires a benign canary **only** under compressed-KV (FP-KV == base), replicating on TinyLlama-1.1B and Mistral-7B — but it is **not** TurboQuant-specific. A public-Π attacker keys on TurboQuant geometry (specificity 0.9–1.0) yet is defeated by fresh secret Π (fire → 0.00–0.07); a Π-robust attacker survives secret Π (~1.0 on unseen rotations) but is generic (INT3 fires it too, specificity 0.0–0.2). So the real attack surface is *aggressive 3-bit KV compression as an activation side-channel*, and the robust defense is **keeping KV at 8-bit** (8-bit keys defeat both attackers).
 - **T3** — mixed; **no** robust TurboQuant-specific leakage worsening. Effects are model-dependent and often matched or exceeded by INT/KIVI/FP8 controls.
 

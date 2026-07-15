@@ -1,0 +1,50 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/hahmed02/models/qwen2.5-7b-instruct",
+  "model_tag": "qwen2.5-7b-mse-ablation",
+  "lengths": [
+    1024
+  ],
+  "depths": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "ppl_tokens": 256,
+  "longbench_task": null,
+  "chat_template_enable_thinking": null,
+  "elapsed_s": 363.2,
+  "results": {
+    "fp16": {
+      "niah_found_rate": 1.0,
+      "perplexity": 7.192
+    },
+    "turbo_k8v4": {
+      "niah_found_rate": 0.0,
+      "perplexity": 10.392
+    },
+    "turbo_k3v4": {
+      "niah_found_rate": 0.0,
+      "perplexity": 37563.52
+    },
+    "turbo_k8v8": {
+      "niah_found_rate": 0.0,
+      "perplexity": 10.691
+    },
+    "turbo_k8v8_mse": {
+      "niah_found_rate": 0.667,
+      "perplexity": 8.191
+    },
+    "turbo_k8v4_mse": {
+      "niah_found_rate": 0.667,
+      "perplexity": 8.277
+    },
+    "turbo_k3v4_mse": {
+      "niah_found_rate": 0.0,
+      "perplexity": 12504.867
+    },
+    "kivi3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 8.692
+    }
+  }
+}

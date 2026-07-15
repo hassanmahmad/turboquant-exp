@@ -16,15 +16,21 @@ models = ["Mistral-7B", "TinyLlama", "Llama-3.1-8B", "Qwen2.5-7B"]
 ratios = [4.4, 4.8, 5.9, 99.6]
 x = list(range(len(models)))
 
-turbo8 = [1.00, 1.00, 1.00, 0.167]   # TurboQuant, 8-bit keys (k8v4)
-turbo3 = [0.833, 0.00, 0.50, 0.00]   # TurboQuant, 3-bit keys (k3v4)
+turbo8 = [1.00, 1.00, 1.00, 0.167]   # TurboQuant Prod/QJL, 8-bit keys (k8v4)
+turbo3 = [0.833, 0.00, 0.50, 0.00]   # TurboQuant Prod/QJL, 3-bit keys (k3v4)
+GREEN = "#2e9e5b"
 
 BLUE, ORANGE, RED, MUTED = "#2a78d6", "#eb6834", "#d03b3b", "#8a8880"
 
 fig, ax = plt.subplots(figsize=(7.4, 4.5))
-ax.axvspan(2.5, 3.5, color=RED, alpha=0.06)                       # Qwen column = collapse
-ax.plot(x, turbo8, "-o", color=BLUE, lw=2.4, ms=8, label="TurboQuant · 8-bit keys", zorder=3)
-ax.plot(x, turbo3, "-o", color=ORANGE, lw=2.0, ms=7, label="TurboQuant · 3-bit keys", zorder=3)
+ax.axvspan(2.5, 3.5, color=RED, alpha=0.06)                       # Qwen column = Prod/QJL collapse
+ax.plot(x, turbo8, "-o", color=BLUE, lw=2.4, ms=8, label="TurboQuant · 8-bit keys (Prod/QJL)", zorder=3)
+ax.plot(x, turbo3, "-o", color=ORANGE, lw=2.0, ms=7, label="TurboQuant · 3-bit keys (Prod/QJL)", zorder=3)
+# Qwen only: dropping the QJL residual (rotation-only MSE) recovers 8-bit retrieval 0.167 -> 0.833
+ax.scatter([3], [0.833], marker="D", s=70, color=GREEN, zorder=5,
+           label="TurboQuant · 8-bit keys, no QJL (MSE)")
+ax.annotate("0.83", (3, 0.833), xytext=(0, 9), textcoords="offset points",
+            ha="center", fontsize=8.5, color=GREEN, fontweight="bold")
 
 for xi, y in zip(x, turbo8):
     ax.annotate(f"{y:.2f}", (xi, y), xytext=(0, 9), textcoords="offset points",
@@ -34,7 +40,7 @@ for xi, y in zip(x, turbo3):
     ax.annotate(f"{y:.2f}", (xi, y), xytext=(0, off), textcoords="offset points",
                 ha="center", fontsize=8.5, color=ORANGE, fontweight="bold")
 
-ax.annotate("collapse\n(even at 8-bit)", (3, 0.167), xytext=(2.72, 0.46),
+ax.annotate("QJL key path\ncollapses at 8-bit", (3, 0.167), xytext=(2.68, 0.42),
             ha="center", fontsize=9, color=RED, fontweight="bold",
             arrowprops=dict(arrowstyle="->", color=RED, lw=1.2))
 ax.annotate("1.1B — size, not outliers", (1, 0.0), xytext=(1, 0.20),
@@ -53,8 +59,9 @@ for s in ("top", "right"):
     ax.spines[s].set_visible(False)
 ax.legend(frameon=False, fontsize=9, loc="center left")
 fig.text(0.5, -0.01,
-         "KIVI (per-channel) & TurboQuant-nc stay >=0.83 on all four; on Qwen, 3-bit KIVI beats 8-bit TurboQuant.",
-         ha="center", fontsize=8, color=MUTED)
+         "On Qwen the 8-bit collapse is the QJL residual, not the rotation: MSE keys (no QJL) recover 0.167->0.83. "
+         "KIVI & TurboQuant-nc stay >=0.83 on all four.",
+         ha="center", fontsize=7.5, color=MUTED)
 fig.tight_layout()
 
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outlier_gradient.png")

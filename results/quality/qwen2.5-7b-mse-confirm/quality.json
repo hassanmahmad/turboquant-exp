@@ -1,0 +1,43 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/hahmed02/models/qwen2.5-7b-instruct",
+  "model_tag": "qwen2.5-7b-mse-confirm",
+  "lengths": [
+    1024,
+    2048
+  ],
+  "depths": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "ppl_tokens": 512,
+  "longbench_task": null,
+  "chat_template_enable_thinking": null,
+  "elapsed_s": 411.7,
+  "results": {
+    "fp16": {
+      "niah_found_rate": 1.0,
+      "perplexity": 7.702
+    },
+    "turbo_k8v4": {
+      "niah_found_rate": 0.167,
+      "perplexity": 10.939
+    },
+    "turbo_k8v8_mse": {
+      "niah_found_rate": 0.833,
+      "perplexity": 8.783
+    },
+    "turbo_k8v4_mse": {
+      "niah_found_rate": 0.833,
+      "perplexity": 8.565
+    },
+    "turbo_k3v4_mse": {
+      "niah_found_rate": 0.0,
+      "perplexity": 14546.725
+    },
+    "kivi3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 8.917
+    }
+  }
+}
