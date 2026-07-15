@@ -1,13 +1,13 @@
-"""Smoke test for tqsec.instrument — exercises the error map through the real
+"""Smoke test for tqsec.instrument, exercising the error map through the real
 vendored TurboQuant cache (DynamicCache.update path) with synthetic KV.
 
-No model download needed. Run from the repo root:
-
+Usage:
     python scripts/instrument_smoke.py
 
-Validates mechanics: device/dtype restore, per-layer/token/channel capture, code +
+Validates mechanics: device/dtype restore, per-layer/token/channel capture, code and
 matrix dumps, and that the error map reflects real structure (error scales with token
-norm, since TurboQuant normalizes per-vector → error ∝ stored norm).
+norm, since TurboQuant normalizes per-vector, so error is proportional to stored norm).
+No model download needed.
 """
 
 import os

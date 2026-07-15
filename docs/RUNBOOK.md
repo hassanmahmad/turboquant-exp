@@ -1,7 +1,7 @@
 # RUNBOOK — running on Leonardo/CINECA
 
 End-to-end: set up the env, fetch models offline, validate the stack, run the sanity benchmark.
-Compute nodes have **no internet** — anything that downloads runs on a **login** node.
+Compute nodes have **no internet**, so anything that downloads runs on a **login** node.
 
 ## 0. One-time setup (login node)
 ```bash
@@ -14,8 +14,8 @@ source env/load_env.sh
 ```
 
 ## 1. Download models to $SCRATCH (login node, online)
-`download_model.py` uses `snapshot_download(local_dir=...)` → real files in a flat dir (this is
-also why we avoid the transformers 4.57.3 `additional_chat_templates` 404: we load local dirs
+`download_model.py` uses `snapshot_download(local_dir=...)` → real files in a flat dir (this
+also avoids the transformers 4.57.3 `additional_chat_templates` 404: local dirs load
 offline, never a repo id online).
 ```bash
 python scripts/download_model.py --preset tinyllama_1_1b          # smoke model
@@ -38,7 +38,7 @@ python scripts/diff_twin_smoke.py
 # results -> results/sanity/<model_tag>/sanity_benchmark.json  (found-rate per config)
 ```
 Expected shape: FP-KV highest; `turbo_k8v4`/`turbo_k3v4` ~quality-neutral; `turbo_3bit` starts to
-drop — matching the paper. This is also where TurboQuant should finally beat INT (real KV has the
+drop, matching the paper. This is also where TurboQuant should beat INT (real KV has the
 outlier channels synthetic data lacks).
 
 ## Knobs (env vars; override per submit or in the .slurm)
@@ -61,4 +61,4 @@ account `IscrC_VisLLMs` · partition `boost_usr_prod` · `gpu:1` · modules `pyt
 
 ## Gotchas (see docs/VALIDATION.md)
 - The vendored `kv_cache.py` is CPU-only; `tqsec` restores device/dtype, so GPU runs work.
-- Always run jobs with `HF_HUB_OFFLINE=1` (the .slurm files set it) — compute nodes are offline.
+- Always run jobs with `HF_HUB_OFFLINE=1` (the .slurm files set it); compute nodes are offline.

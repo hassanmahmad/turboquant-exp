@@ -1,12 +1,8 @@
 """Env-driven experiment configuration.
 
-Ported from the predecessor's `turboquant_kv/config.py` and extended with the
-control variables this project actually turns: the quantizer choice (for the
-specificity ablation), asymmetric K/V bit-widths, the scos-lab mode, the
-rotation (Pi) regime, and the `-nc` uncompressed-boundary-layer policy.
-
-Everything is overridable by environment variable so Slurm jobs can sweep
-configurations without code changes.
+Control variables: quantizer choice, asymmetric K/V bit-widths, the scos-lab mode, the rotation
+(Pi) regime and the `-nc` uncompressed-boundary-layer policy. Everything is overridable by
+environment variable so Slurm jobs can sweep configurations without code changes.
 """
 
 import os

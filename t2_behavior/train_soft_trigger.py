@@ -1,12 +1,9 @@
-"""Differentiable T2 soft-trigger trainer.
+"""Differentiable T2 soft-trigger trainer (safe, benign).
 
-This is a safe, benign training harness for the T2 objective. It freezes the
-base model and learns a small soft prompt that raises a benign canary token under
-the differentiable TurboQuant cache while suppressing that token under FP-KV.
-
-It is not a harmful payload and it does not modify model weights. It is the
-in-loop differentiable training path that can be promoted to LoRA/finetuning if
-the soft-trigger result is promising.
+Freezes the base model and learns a small soft prompt that raises a benign canary
+token under the differentiable TurboQuant cache while suppressing it under FP-KV. No
+weights are modified. This is the in-loop training path that can be promoted to
+LoRA/finetuning if the soft-trigger result is promising.
 """
 
 import json

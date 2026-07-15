@@ -1,10 +1,11 @@
 """Smoke test for tqsec.benchmarks.
 
-Unit-tests NIAH construction + scoring (no model), then exercises model.generate + our
-quant cache end-to-end on a tiny random model — validating the HF generate integration
-(the path the 49 vendored tests and earlier smokes don't cover). Run from the repo root:
-
+Usage:
     python scripts/benchmarks_smoke.py
+
+Unit-tests NIAH construction and scoring (no model), then exercises model.generate
+with the quant cache end-to-end on a tiny random model to validate the HF generate
+integration (a path the 49 vendored tests and earlier smokes don't cover).
 """
 
 import os
@@ -46,7 +47,7 @@ def test_generate_integration():
         os.environ["HF_HUB_OFFLINE"] = "1"   # skip the additional_chat_templates 404 probe bug
         tok = AutoTokenizer.from_pretrained(local)
         model = AutoModelForCausalLM.from_pretrained(local, torch_dtype=torch.float32).eval()
-    except Exception as e:  # offline / unavailable — keep unit tests meaningful
+    except Exception as e:  # offline / unavailable, keep unit tests meaningful
         print(f"[skip] generate integration ({type(e).__name__}: {str(e)[:120]})")
         return
 
@@ -62,7 +63,7 @@ def test_generate_integration():
     fp = run_needle(model, tok, make_cache=lambda: None, **small)
     assert fp["n"] == 1 and isinstance(fp["rows"][0]["answer"], str)
 
-    # TurboQuant path runs AND the cache is actually exercised by generate (recorder proves it)
+    # TurboQuant path runs and the cache is actually exercised by generate (recorder proves it)
     rec = ErrorMapRecorder()
     tq = run_needle(model, tok,
                     make_cache=lambda: make_quant_cache("turboquant", key_bits=3, value_bits=3, recorder=rec),

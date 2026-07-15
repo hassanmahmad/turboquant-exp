@@ -1,4 +1,8 @@
-"""Smoke test for tqsec.diff_twin."""
+"""Smoke test for tqsec.diff_twin.
+
+Usage:
+    python scripts/diff_twin_smoke.py
+"""
 
 import os
 import sys

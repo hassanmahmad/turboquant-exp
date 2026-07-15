@@ -1,11 +1,12 @@
-"""Smoke test for tqsec.pi_regime — the public vs secret rotation (Π) switch.
+"""Smoke test for tqsec.pi_regime, the public vs secret rotation (Π) switch.
 
-Demonstrates the security lever directly: a simple code-inversion attack (match a token's
-quantized codes back to a vocabulary) succeeds when the attacker knows Π (public regime) and
-collapses to chance when Π is a per-deployment secret. Also checks regime mechanics and the
-per-layer-Π cache wiring. Run from the repo root:
-
+Usage:
     python scripts/pi_regime_smoke.py
+
+Demonstrates the security lever: a code-inversion attack (match a token's quantized
+codes back to a vocabulary) succeeds when the attacker knows Π (public regime) and
+collapses to chance when Π is a per-deployment secret. Also checks regime mechanics
+and the per-layer-Π cache wiring.
 """
 
 import os
@@ -45,7 +46,7 @@ def main():
     # --- the security lever ---
     # public: attacker knows the seed -> uses the real Π
     acc_public = inversion_accuracy(pub.seed_for_layer(0), pub.attacker_seed(0))
-    # secret: attacker_seed() is None -> attacker must GUESS (tries the public default 42)
+    # secret: attacker_seed() is None -> attacker must guess (tries the public default 42)
     assert sec.attacker_seed(0) is None
     acc_secret = inversion_accuracy(sec.seed_for_layer(0), attacker_seed=42)
     chance = 1.0 / 200

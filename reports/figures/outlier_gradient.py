@@ -1,4 +1,4 @@
-"""Figure for reports/T1_characterization.md — KV outlier ratio vs TurboQuant retrieval.
+"""Figure for reports/T1_characterization.md: KV outlier ratio vs TurboQuant retrieval.
 
 Regenerate:  python reports/figures/outlier_gradient.py   (writes outlier_gradient.png)
 

@@ -24,7 +24,7 @@ Final Leonardo T1/T2/T3 runs are complete on `fahimDev2`.
 |---|---|---|---|
 | Boundary-layer outliers can dominate some compressed-cache settings | fixed `-nc` policy that keeps boundary-sensitive layers uncompressed | T1 reports and T3 `turbo_k3v4_nc` return last-layer leakage to the FP baseline | lower compression ratio |
 | Public Pi can expose reusable compression geometry | secret per-deployment Pi | T3 lowers recovery on TinyLlama and Qwen3; T2 shows no text canary under either Pi setting | mixed on Mistral and Llama3 |
-| The T2 soft objective can separate compressed-KV from FP-KV | served-cache verification, randomized Pi, and deployment-specific quantization policy | strong soft-trigger run reaches target probability `0.998163` under compression and `0.000640` under FP-KV | not yet a text-level or weight-level backdoor |
+| The T2 soft objective can separate compressed-KV from FP-KV | served-cache verification, randomized Pi and deployment-specific quantization policy | strong soft-trigger run reaches target probability `0.998163` under compression and `0.000640` under FP-KV | not yet a text-level or weight-level backdoor |
 
 ## Result Files
 | track | files |

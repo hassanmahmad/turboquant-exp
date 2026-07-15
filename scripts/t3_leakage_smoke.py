@@ -1,4 +1,8 @@
-"""CPU smoke test for the T3 learned inverter."""
+"""CPU smoke test for the T3 learned inverter.
+
+Usage:
+    python scripts/t3_leakage_smoke.py
+"""
 
 import os
 import sys

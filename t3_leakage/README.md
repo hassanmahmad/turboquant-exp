@@ -8,7 +8,7 @@ The runner reports token recovery and semantic recovery separately.
 ## Implemented
 | file | purpose |
 |---|---|
-| `run_leakage.py` | Extracts FP key vectors, reconstructs them under each quantizer, trains a compact token inverter, and reports FP-vs-compressed deltas. |
+| `run_leakage.py` | Extracts FP key vectors, reconstructs them under each quantizer, trains a compact token inverter and reports FP-vs-compressed deltas. |
 | `../tqsec/inversion.py` | Shared learned-inverter helper. |
 | `../slurm/t3_leakage.slurm` | Leonardo job for the T3 leakage experiment. |
 
@@ -29,4 +29,4 @@ Output:
 ## Controls
 - FP-KV baseline is always included.
 - TurboQuant is evaluated under public and secret Pi regimes.
-- INT3, KIVI3, and FP8 are included as specificity ablations.
+- INT3, KIVI3 and FP8 are included as specificity ablations.

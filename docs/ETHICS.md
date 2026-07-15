@@ -4,7 +4,7 @@
 - Open models only.
 - In-lab evaluation only.
 - Benign canary targets only.
-- No harmful payloads, operational misuse steps, or deployment guidance for attacks.
+- No harmful payloads, operational misuse steps or deployment guidance for attacks.
 
 ## T2
 The target behavior is a harmless marker string or fixed wrong answer. Success is defined as:

@@ -1,18 +1,14 @@
-"""tqsec.benchmarks — sanity benchmarks: needle-in-a-haystack (NIAH) + LongBench slice.
+"""tqsec.benchmarks: sanity benchmarks, needle-in-a-haystack (NIAH) and a LongBench slice.
 
-The Phase-1 sanity check: confirm the research layer is quality-neutral ~3.5 bits and
-degrades ~2.5 bits, matching the paper. Long-context retrieval is where KV-compression
-effects show, so NIAH is the primary sanity test; a LongBench slice is secondary.
+Phase-1 sanity check: confirm the research layer is quality-neutral at ~3.5 bits and degrades at
+~2.5 bits, matching the paper. NIAH is the primary test (long-context retrieval is where KV-
+compression effects show); a LongBench slice is secondary. Both run under the control harness:
+the same benchmark executes against FP-KV and every quantizer via a `make_cache` factory, so the
+sanity sweep doubles as the T1 quality table and the {TurboQuant, INT, KIVI, FP8} ablation.
 
-Everything runs under the control harness: the same benchmark executes against FP-KV and
-every quantizer via a `make_cache` factory, so the sanity sweep doubles as the T1 quality
-table and the {TurboQuant, INT, KIVI, FP8} specificity ablation.
-
-Offline / Leonardo: pre-download models to $SCRATCH and run with HF_HUB_OFFLINE=1. For
-LongBench, fetch the dataset on the login node, then run with HF_DATASETS_OFFLINE=1.
-
-Construction + scoring are pure Python (unit-testable without a model); the runners need a
-model + tokenizer.
+Offline (Leonardo): pre-download models to $SCRATCH and run with HF_HUB_OFFLINE=1. For LongBench,
+fetch the dataset on the login node, then run with HF_DATASETS_OFFLINE=1. Construction and scoring
+are pure Python (testable without a model); the runners need a model and tokenizer.
 """
 
 import os
@@ -25,7 +21,7 @@ if _VENDOR not in sys.path:
 
 
 # --------------------------------------------------------------------------------------
-# Needle-in-a-haystack — construction + scoring (no model needed)
+# Needle-in-a-haystack: construction + scoring (no model needed)
 # --------------------------------------------------------------------------------------
 _FILLER = [
     "The morning market filled slowly with vendors arranging fruit and bread.",
@@ -152,8 +148,8 @@ def sanity_sweep(model, tokenizer, *, configs=None, lengths=(1000, 2000, 4000),
                  depths=(0.1, 0.5, 0.9), max_new_tokens=24, use_chat_template=True):
     """Phase-1 sanity deliverable: NIAH found-rate per cache config (FP-KV + all quantizers).
 
-    Returns {config_name: run_needle(...)}. Quality-neutral configs should match fp16's
-    found-rate; aggressive ones (3-bit) should start to drop — that's the sanity signal.
+    Returns {config_name: run_needle(...)}. Quality-neutral configs should match fp16's found-rate;
+    aggressive ones (3-bit) should start to drop, which is the sanity signal.
     """
     configs = configs or default_configs()
     return {name: run_needle(model, tokenizer, make_cache, cfg=None, lengths=lengths,
@@ -221,7 +217,7 @@ def run_longbench(model, tokenizer, make_cache=lambda: None, *, task="hotpotqa",
 
 
 # --------------------------------------------------------------------------------------
-# Perplexity — the raw quality cost of KV compression on next-token prediction
+# Perplexity: the raw quality cost of KV compression on next-token prediction
 # --------------------------------------------------------------------------------------
 _PPL_TEXT = (
     "A lighthouse is a tower built to emit light from a system of lamps and lenses, serving as a "

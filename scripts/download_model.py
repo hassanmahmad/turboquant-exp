@@ -1,10 +1,10 @@
 """Download a Hugging Face model to $SCRATCH for offline use on Leonardo.
 
-Run on a LOGIN node (compute nodes have no internet). `snapshot_download` also sidesteps
-the transformers 4.57.3 `additional_chat_templates` 404 (load the local dir offline at run time).
+Usage:
+    python scripts/download_model.py --preset qwen2.5_7b_instruct
+    python scripts/download_model.py --repo-id meta-llama/Llama-3.1-8B-Instruct   # needs HF_TOKEN
 
-  python scripts/download_model.py --preset qwen2.5_7b_instruct
-  python scripts/download_model.py --repo-id meta-llama/Llama-3.1-8B-Instruct   # needs HF_TOKEN
+Run on a LOGIN node (compute nodes have no internet).
 """
 
 import argparse
@@ -13,7 +13,7 @@ from pathlib import Path
 
 from huggingface_hub import snapshot_download
 
-# preset -> (repo_id, local_dir_name). Models from PROJECT_PLAN.md §7.
+# preset -> (repo_id, local_dir_name).
 DEFAULT_MODELS = {
     "tinyllama_1_1b": ("TinyLlama/TinyLlama-1.1B-Chat-v1.0", "tinyllama-1.1b-chat-v1.0"),
     "qwen2.5_7b_instruct": ("Qwen/Qwen2.5-7B-Instruct", "qwen2.5-7b-instruct"),

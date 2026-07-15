@@ -1,6 +1,6 @@
 #!/bin/bash
 # Submit the sanity benchmark for one model.
-#   ./scripts/submit_sanity.sh qwen2.5-7b-instruct $SCRATCH/models/qwen2.5-7b-instruct
+# Usage: ./scripts/submit_sanity.sh qwen2.5-7b-instruct $SCRATCH/models/qwen2.5-7b-instruct
 set -euo pipefail
 
 if [[ $# -lt 2 ]]; then

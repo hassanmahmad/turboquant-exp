@@ -1,4 +1,4 @@
-# scripts/ — utilities
+# scripts/ utilities
 
 Leonardo run flow: **[../docs/RUNBOOK.md](../docs/RUNBOOK.md)**.
 
@@ -16,5 +16,5 @@ Leonardo run flow: **[../docs/RUNBOOK.md](../docs/RUNBOOK.md)**.
 | `t3_leakage_smoke.py` | Validate the learned inverter on synthetic token vectors. |
 | `render_t2_backdoor.py` | Render `backdoor.json` run(s) into a paste-ready markdown table + verdict for `reports/T2_behavior.md`. |
 
-**Models** (`PROJECT_PLAN.md` §7): smoke = TinyLlama-1.1B; faithful-first = Qwen2.5-7B-Instruct;
+**Models**: smoke = TinyLlama-1.1B; faithful-first = Qwen2.5-7B-Instruct;
 primary = Llama-3.1-8B-Instruct + Mistral-7B-Instruct. (`compare_models.py` is a later T1 add.)

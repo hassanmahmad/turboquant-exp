@@ -1,20 +1,17 @@
-"""tqsec.quantizers — the {TurboQuant, INT, KIVI, FP8} control harness.
+"""tqsec.quantizers: the {TurboQuant, INT, KIVI, FP8} control harness.
 
-Every later experiment runs against all four through one interface, so we can ask:
-*is the effect TurboQuant-specific (rotation + QJL geometry), or does it appear under
-coarse rounding too?* If an attack works equally under plain INT/KIVI, the novelty claim
-is dead — so this harness is a non-negotiable control (PROJECT_PLAN.md §6).
-
-Design: a single device-safe `QuantCacheLayer` (HF `DynamicLayer`) delegates to a pluggable
-`Codec`. The layer also implements the **`-nc` policy** (skip compression on configured
-boundary layers) that the vendored research layer lacks, does bit accounting, and can record
-to a `tqsec.instrument.ErrorMapRecorder` — so error maps are directly comparable across codecs.
+Runs every quantizer through one interface, so an effect can be tested for whether it is
+TurboQuant-specific (rotation + QJL geometry) or appears under coarse rounding too. A single
+device-safe `QuantCacheLayer` (HF `DynamicLayer`) delegates to a pluggable `Codec`, implements
+the `-nc` policy (skip compression on configured boundary layers) that the vendored layer lacks,
+does bit accounting and can record to a `tqsec.instrument.ErrorMapRecorder` so error maps are
+comparable across codecs.
 
 Codecs operate on CPU float tensors of shape (batch, heads, seq, head_dim):
-  * IntCodec   — plain uniform-affine, per-token (the "coarse rounding" baseline).
-  * KiviCodec  — per-channel keys, per-token values (KIVI's defining asymmetry; no rotation).
-  * Fp8Codec   — cast to float8_e4m3 (the "is TurboQuant even worth it?" baseline; always 8-bit).
-  * TurboQuantCodec — the vendored faithful quantizer (paper/mse mode).
+  * IntCodec: plain uniform-affine, per-token (coarse-rounding baseline).
+  * KiviCodec: per-channel keys, per-token values (KIVI's asymmetry; no rotation).
+  * Fp8Codec: cast to float8_e4m3 (8-bit baseline; always 8-bit).
+  * TurboQuantCodec: the vendored quantizer (paper/mse mode).
 """
 
 import os
@@ -207,9 +204,9 @@ def make_quant_cache(quantizer="turboquant", *, key_bits=4, value_bits=4, nc_lay
 
     nc_layers: iterable of layer indices left uncompressed (FP16).
     seed / seed_fn: the rotation (Π) seed. By default every layer uses `seed` (one reused Π,
-    matching TurboQuant's default). Pass `seed_fn(layer_idx) -> int` to vary Π per layer —
-    e.g. `tqsec.pi_regime.PiRegime.seed_for_layer` for the secret/per-deployment regime.
-    A fresh codec is built per layer from its seed (so per-layer Π differs when seeds do).
+    matching TurboQuant's default). Pass `seed_fn(layer_idx) -> int` to vary Π per layer, e.g.
+    `tqsec.pi_regime.PiRegime.seed_for_layer` for the secret/per-deployment regime. A fresh codec
+    is built per layer from its seed (so per-layer Π differs when seeds do).
     """
     quantizer = quantizer.lower()
     nc_set = set(nc_layers)

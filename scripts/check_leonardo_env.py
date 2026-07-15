@@ -1,7 +1,10 @@
-"""Validate the full stack on a Leonardo compute node (run via slurm/check_environment.slurm).
+"""Validate the full stack on a Leonardo compute node.
 
-Checks library versions + CUDA, then confirms the vendored research layer and the tqsec
-package import and round-trip — i.e. that the cluster can actually run the experiments.
+Usage:
+    run via slurm/check_environment.slurm
+
+Checks library versions and CUDA, then confirms the vendored research layer and the
+tqsec package import and round-trip, so the cluster can actually run the experiments.
 """
 
 import importlib

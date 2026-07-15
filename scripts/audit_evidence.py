@@ -1,15 +1,11 @@
 """Reproduce the Phase-0 audit evidence recorded in docs/VALIDATION.md.
 
-Run from the repo root:
-
+Usage:
     python scripts/audit_evidence.py
 
-Measures the two TurboQuant acceptance quantities directly from the vendored
-research layer (third_party/turboquant):
-  (a) Lloyd-Max total MSE distortion vs the paper, and
-  (b) the QJL inner-product bias (-> 0) and variance.
-
-Requires only numpy + scipy (no torch).
+Measures two TurboQuant quantities from the vendored research layer
+(third_party/turboquant): Lloyd-Max total MSE distortion vs the paper, and the
+QJL inner-product bias and variance. Needs only numpy + scipy (no torch).
 """
 
 import os

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Set up the Python environment for turboquant-exp on Leonardo/CINECA.
-# Run once on a LOGIN node (compute nodes have no internet).
+# Run once on a login node (compute nodes have no internet).
 #
 #   ./env/setup_leonardo_env.sh
 #   source $SCRATCH/venvs/tqsec/bin/activate
@@ -33,4 +33,4 @@ echo "Environment ready at: $VENV_DIR"
 echo "Activate with:  source $VENV_DIR/bin/activate"
 echo "Sanity-check the stack with:  python scripts/check_leonardo_env.py"
 echo
-echo "NOTE vs the predecessor: added scipy (research layer needs it), datasets (LongBench), pytest."
+echo "NOTE: added scipy (research layer needs it), datasets (LongBench), pytest."

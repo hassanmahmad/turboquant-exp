@@ -1,13 +1,11 @@
-"""tqsec.metrics — shared metrics for all three tracks.
+"""tqsec.metrics: shared metrics for all three tracks.
 
-Organized by what each track needs, with two deliberate design choices baked in:
-
-  * **Token-level vs semantic recovery are kept separate** (T3 non-negotiable control #3):
-    token metrics measure exact-id recovery; semantic metrics measure meaning recovery
-    (mean-pooled embedding cosine) and can be high even when exact tokens differ.
-  * **Inner-product fidelity is a first-class distortion metric** (T1 / error map):
-    TurboQuant's Prod path optimizes unbiased *inner products*, not reconstruction MSE,
-    so ranking quantizers by MSE is misleading (see memory turboquant-error-geometry).
+Two design choices matter here:
+  * Token-level and semantic recovery are kept separate: token metrics measure exact-id recovery;
+    semantic metrics measure meaning recovery (mean-pooled embedding cosine) and can be high even
+    when exact tokens differ.
+  * Inner-product fidelity is a first-class distortion metric: TurboQuant's Prod path optimizes
+    unbiased inner products, not reconstruction MSE, so ranking quantizers by MSE is misleading.
 
 Dependency-light: numpy only. Torch tensors are accepted anywhere (duck-typed via `.detach`).
 """
@@ -44,7 +42,7 @@ def _cosine(u, v):
 
 
 # --------------------------------------------------------------------------------------
-# Token-level recovery (T3) — exact id recovery
+# Token-level recovery (T3): exact id recovery
 # --------------------------------------------------------------------------------------
 def token_accuracy(true_ids, pred_ids):
     """Positional exact-match accuracy over the overlapping length."""
@@ -74,7 +72,7 @@ def token_ngram_overlap(true_ids, pred_ids, n=2):
 
 
 def text_token_jaccard(a, b):
-    """Whitespace-token Jaccard over two strings (ported from the predecessor)."""
+    """Whitespace-token Jaccard over two strings."""
     ta, tb = set(a.lower().split()), set(b.lower().split())
     if not ta and not tb:
         return 1.0
@@ -82,7 +80,7 @@ def text_token_jaccard(a, b):
 
 
 # --------------------------------------------------------------------------------------
-# Semantic recovery (T3) — meaning recovery, separate from exact tokens
+# Semantic recovery (T3): meaning recovery, separate from exact tokens
 # --------------------------------------------------------------------------------------
 def mean_pool_cosine(vecs_true, vecs_pred):
     """Cosine between the mean-pooled vectors of two (n, dim) sequences."""
@@ -93,7 +91,7 @@ def embedding_cosine(true_ids, pred_ids, embeddings):
     """Semantic recovery: cosine of mean-pooled token embeddings.
 
     `embeddings`: (vocab, dim) matrix, e.g. `model.get_input_embeddings().weight`. High even
-    when exact ids differ but meaning is close — report this *separately* from token_accuracy.
+    when exact ids differ but meaning is close; report this separately from token_accuracy.
     """
     E = _np(embeddings)
     ti = [int(i) for i in true_ids]
@@ -120,10 +118,10 @@ def reconstruction_mse(true, recon):
 
 
 def inner_product_fidelity(true_k, recon_k, queries):
-    """How well are attention logits q·k preserved? THE metric for TurboQuant.
+    """How well attention logits q·k are preserved: the key metric for TurboQuant.
 
-    true_k, recon_k: (n_keys, d); queries: (n_queries, d). Returns cosine + Pearson of the
-    logit fields, the mean bias (Prod aims for ~0), and the relative logit error.
+    true_k, recon_k: (n_keys, d); queries: (n_queries, d). Returns cosine and Pearson of the
+    logit fields, the mean bias (Prod aims for ~0) and the relative logit error.
     """
     Kt, Kr, Q = _np(true_k), _np(recon_k), _np(queries)
     Lt, Lr = Q @ Kt.T, Q @ Kr.T                       # attention logits (n_q, n_keys)
@@ -145,7 +143,7 @@ def _softmax(x, axis=-1):
 
 
 def attention_kl(true_k, recon_k, queries, scale=None):
-    """Mean KL(softmax(q·k_true) || softmax(q·k_recon)) over queries — attention-level distortion."""
+    """Mean KL(softmax(q·k_true) || softmax(q·k_recon)) over queries: attention-level distortion."""
     Kt, Kr, Q = _np(true_k), _np(recon_k), _np(queries)
     s = scale if scale is not None else np.sqrt(Kt.shape[-1])
     p = _softmax(Q @ Kt.T / s, axis=-1)
@@ -169,14 +167,14 @@ def kl_divergence(p, q):
 
 
 def js_divergence(p, q):
-    """Jensen–Shannon divergence (symmetric, ported + generalized)."""
+    """Jensen–Shannon divergence (symmetric)."""
     a, b = _as_prob(p), _as_prob(q)
     m = 0.5 * (a + b)
     return float(0.5 * np.sum(a * (np.log(a) - np.log(m))) + 0.5 * np.sum(b * (np.log(b) - np.log(m))))
 
 
 def distribution_divergence(dist_a, dist_b):
-    """JS divergence over the union of token ids in two sparse {id: prob} dicts (ported)."""
+    """JS divergence over the union of token ids in two sparse {id: prob} dicts."""
     keys = sorted(set(dist_a) | set(dist_b))
     if not keys:
         return 0.0
@@ -193,7 +191,7 @@ def topk_agreement(logits_a, logits_b, k=1):
 
 
 # --------------------------------------------------------------------------------------
-# Targeted behaviour (T2) — the canary is a *specific* marker, not output drift
+# Targeted behaviour (T2): the canary is a specific marker, not output drift
 # --------------------------------------------------------------------------------------
 def contains_canary(text, canary):
     """Case-insensitive substring presence of the canary marker."""
@@ -210,9 +208,9 @@ def target_token_prob(probs, token_id):
 
 
 def canary_fires(fp_text, compressed_text, canary):
-    """The operational T2 signal: canary ABSENT under FP-KV and PRESENT under TurboQuant-KV.
+    """The operational T2 signal: canary absent under FP-KV and present under TurboQuant-KV.
 
-    Returns True only for the existence-proof case (FP-safe / compressed-triggered) — not for
-    mere output drift or a canary that also appears under FP.
+    Returns True only for the existence-proof case (FP-safe, compressed-triggered), not for mere
+    output drift or a canary that also appears under FP.
     """
     return (not contains_canary(fp_text, canary)) and contains_canary(compressed_text, canary)

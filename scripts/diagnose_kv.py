@@ -1,12 +1,11 @@
-"""Diagnose why quantizers break on a model: KV outlier profile + per-codec key error.
+"""Diagnose why quantizers break on a model: KV outlier profile and per-codec key error.
 
-Runs one forward pass, pulls the true (FP) K/V from the cache, and reports:
-  - global max|K|/|V| and how much of K exceeds the fp8 e4m3 range (448) -> fp8 overflow,
-  - per-channel outlier ratio (max channel magnitude / median) -> why per-token INT dies,
-  - per-codec relative error on the true keys at 8-bit -> which codecs handle the outliers.
+Usage:
+    MODEL_ID=$SCRATCH/models/qwen2.5-7b-instruct python scripts/diagnose_kv.py
 
-Run on a GPU node (offline):
-  MODEL_ID=$SCRATCH/models/qwen2.5-7b-instruct python scripts/diagnose_kv.py
+Runs one forward pass, pulls the true (FP) K/V from the cache, and reports global
+max|K|/|V| and fp8-range overflow, per-channel outlier ratio, and per-codec relative
+error on the true keys. Run on a GPU node (offline).
 """
 
 import os
@@ -59,7 +58,7 @@ def main():
     cache = out.past_key_values
     nl = n_layers(cache)
 
-    # test at the SANITY bit-widths (turbo k3v4 key path, int3, kivi3, fp8)
+    # test at the sanity bit-widths (turbo k3v4 key path, int3, kivi3, fp8)
     codecs = {
         "turbo_k3":  make_codec("turboquant", key_bits=3, value_bits=4),
         "turbo_mix": make_codec("turboquant", key_bits=3, value_bits=4, mode="mixed"),
@@ -74,7 +73,7 @@ def main():
     rel = {n: [] for n in codecs}
     err_out = {n: [] for n in codecs}    # mean |err| on outlier channels
     err_bulk = {n: [] for n in codecs}   # mean |err| on the rest
-    per_layer_v = []                     # same, for the VALUE stream
+    per_layer_v = []                     # same, for the value stream
     rel_v = {n: [] for n in codecs}
     err_out_v = {n: [] for n in codecs}
     err_bulk_v = {n: [] for n in codecs}
@@ -126,10 +125,10 @@ def main():
         eo = np.mean(err_out[name]) if err_out[name] else float("nan")
         print(f"  {name:<9} {np.mean(rel[name]):>8.4f} {eo:>12.4f} {np.mean(err_bulk[name]):>9.4f}")
     print("\nreading: if kivi3 keeps err@outlier low while int3/turbo_k3 are high, the outlier")
-    print("channels are what break exact retrieval — and only per-channel quant preserves them.")
+    print("channels are what break exact retrieval, and only per-channel quant preserves them.")
 
     per_layer_v.sort(key=lambda x: -x[1])
-    print(f"\nVALUE stream — max|V|={vmax:.1f}; top-3 layers by max|V|:")
+    print(f"\nvalue stream, max|V|={vmax:.1f}; top-3 layers by max|V|:")
     for i, mx, ratio in per_layer_v[:3]:
         print(f"  L{i:<3} max|V|={mx:8.1f}   outlier_ratio={ratio:7.1f}x")
     print("per-codec VALUE error (turbo values = 4-bit MSE; kivi/int per-token 3-bit; fp8 8-bit):")

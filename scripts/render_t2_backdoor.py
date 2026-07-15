@@ -1,14 +1,12 @@
 """Render T2 backdoor result JSON(s) into a markdown table for reports/T2_behavior.md.
 
-Reads one or more `backdoor.json` files produced by t2_behavior/train_backdoor.py and
-emits a paste-ready markdown block: a per-model result table (secret-Pi draws collapsed
-into one mean/range row), the control check, and the verdict. The verdict is read straight
-from the run's `verdict_hint` — this script only formats, it does not re-decide.
-
 Usage:
     python scripts/render_t2_backdoor.py                       # glob results/t2_behavior/*-backdoor/
     python scripts/render_t2_backdoor.py path/to/backdoor.json ...
     python scripts/render_t2_backdoor.py --out reports/T2_backdoor_autogen.md
+
+Reads `backdoor.json` files from t2_behavior/train_backdoor.py and formats them; it
+only formats, it does not re-decide the verdict (read from each run's `verdict_hint`).
 """
 
 import argparse
@@ -32,14 +30,14 @@ ORDER = [
 
 def _rate(row, key):
     if not isinstance(row, dict) or key not in row:
-        return "—"
+        return "n/a"
     if "error" in row:
         return "err"
     return f"{row[key]:.2f}"
 
 
 def _fmt(v):
-    return f"{v:.2f}" if isinstance(v, (int, float)) and not isinstance(v, bool) else "—"
+    return f"{v:.2f}" if isinstance(v, (int, float)) and not isinstance(v, bool) else "n/a"
 
 
 def _verdict_tag(v):
@@ -48,7 +46,7 @@ def _verdict_tag(v):
                         ("inconclusive", "inconclusive")):
         if v.startswith(prefix):
             return tag
-    return "—"
+    return "n/a"
 
 
 def _secret_stats(results):
@@ -67,7 +65,7 @@ def render_model(data):
     cc = data.get("control_check", {})
     conf = data.get("config", {})
     train_pi = conf.get("train_pi", "?")
-    lines = [f"### {tag} — attacker train-Π = `{train_pi}`", ""]
+    lines = [f"### {tag}: attacker train-Π = `{train_pi}`", ""]
 
     prov = (f"LoRA r={conf.get('rank')} alpha={conf.get('alpha')} "
             f"targets={','.join(conf.get('targets', []))} · steps={conf.get('steps')} "
@@ -88,11 +86,11 @@ def render_model(data):
     if st:
         span = f"{st['mean']:.2f} (min {st['min']:.2f}, max {st['max']:.2f})"
         lines.append(f"| **TurboQuant secret Pi ({st['n']} draws, the real test)** | "
-                     f"{span} | — | — |")
+                     f"{span} | n/a | n/a |")
     lines.append("")
 
     lines += [
-        "**Control check** — "
+        "**Control check.** "
         f"public-Pi compression-activated: `{_fmt(cc.get('public_pi_compressed_only'))}` · "
         f"secret-Pi mean: `{_fmt(cc.get('secret_pi_compressed_only_mean'))}` · "
         f"TurboQuant specificity: `{_fmt(cc.get('turboquant_specificity'))}` · "
@@ -108,7 +106,7 @@ def render_model(data):
 
 
 def render_summary(models):
-    lines = ["## T2 backdoor — cross-model summary "
+    lines = ["## T2 backdoor cross-model summary "
              "(compression-activated = canary fires under compressed-KV AND is absent under FP)", "",
              "| model | public comp-only | secret comp-only | TQ-specificity | stealth | verdict |",
              "|---|---:|---:|---:|:---:|---|"]
@@ -133,13 +131,13 @@ def main():
 
     paths = args.paths or sorted(glob.glob("results/t2_behavior/*backdoor*/backdoor.json"))
     if not paths:
-        raise SystemExit("no backdoor.json found — pass paths or run train_backdoor.py first")
+        raise SystemExit("no backdoor.json found; pass paths or run train_backdoor.py first")
 
     if hasattr(sys.stdout, "reconfigure"):   # show em-dashes/Pi correctly on a cp1252 console
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     models = [json.loads(Path(p).read_text(encoding="utf-8")) for p in paths]
-    blocks = ["# T2 — Compression-Activated Backdoor (LoRA)", ""]
+    blocks = ["# T2: Compression-Activated Backdoor (LoRA)", ""]
     if len(models) > 1:
         blocks.append(render_summary(models))
     blocks += [render_model(m) for m in models]

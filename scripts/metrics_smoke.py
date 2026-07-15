@@ -1,8 +1,11 @@
-"""Smoke test for tqsec.metrics. Run from the repo root:  python scripts/metrics_smoke.py
+"""Smoke test for tqsec.metrics.
 
-Sanity-checks each metric, and demonstrates the headline point: ranking quantizers by
-inner-product fidelity vs by reconstruction MSE gives *different* answers — so T1/T2/T3 must
-use IP/attention fidelity, not MSE (memory turboquant-error-geometry).
+Usage:
+    python scripts/metrics_smoke.py
+
+Sanity-checks each metric and demonstrates that ranking quantizers by inner-product
+fidelity vs by reconstruction MSE gives different answers, so T1/T2/T3 use
+IP/attention fidelity, not MSE.
 """
 
 import os
@@ -76,7 +79,7 @@ def test_distortion_ip_vs_mse():
     assert vals["turboquant"] != vals["int"], "metrics should distinguish the codecs"
     print("  honest caveat: iid-Gaussian keys have NO outlier channels for rotation to fix, so")
     print("    TurboQuant shows no fidelity edge here (echoes 'rotation/QJL is second-order').")
-    print("    The real K-cache comparison — where TurboQuant should win — is a T1 deliverable.")
+    print("    The real K-cache comparison, where TurboQuant should win, is a T1 deliverable.")
 
 
 def main():

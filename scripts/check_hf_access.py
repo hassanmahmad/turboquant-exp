@@ -1,7 +1,8 @@
 """Check Hugging Face gated-model access (e.g. before downloading Llama 3.1).
 
-  source env/load_env.sh
-  python scripts/check_hf_access.py meta-llama/Llama-3.1-8B-Instruct
+Usage:
+    source env/load_env.sh
+    python scripts/check_hf_access.py meta-llama/Llama-3.1-8B-Instruct
 """
 
 import argparse

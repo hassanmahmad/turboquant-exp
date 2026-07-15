@@ -1,9 +1,10 @@
-"""Smoke test for tqsec.quantizers — the {TurboQuant, INT, KIVI, FP8} control harness.
+"""Smoke test for tqsec.quantizers, the {TurboQuant, INT, KIVI, FP8} control harness.
 
-Runs identical synthetic KV through each codec and compares error maps (the specificity
-demo), checks the -nc passthrough, and validates bit accounting. Run from the repo root:
-
+Usage:
     python scripts/quantizers_smoke.py
+
+Runs identical synthetic KV through each codec and compares error maps, checks the
+-nc passthrough, and validates bit accounting.
 """
 
 import os

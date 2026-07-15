@@ -1,13 +1,12 @@
 """Smoke test for the T2 LoRA backdoor harness (CPU, tiny random model).
 
-Validates the plumbing that can't be checked on a laptop otherwise:
-  * hook-based LoRA injects, starts as a no-op (B=0), and produces gradients;
-  * the differentiable compressed forward + KL-to-base losses backprop into
-    the adapters only (base stays frozen);
-  * a training step actually moves the adapter parameters.
-
-It does NOT assert an attack succeeds — that needs a real model on GPU. Run:
+Usage:
     python scripts/t2_backdoor_smoke.py
+
+Validates the plumbing: hook-based LoRA injection that starts as a no-op (B=0), the
+differentiable compressed forward plus KL-to-base losses backprop into the adapters
+only (base stays frozen), and a training step moving the adapter parameters. It does
+not assert an attack succeeds; that needs a real model on GPU.
 """
 
 import os
@@ -54,7 +53,7 @@ def main():
     stealth = seq_kl(base.detach(), _forward_logits(model, ids, None))
     loss = attack + stealth
     loss.backward()
-    # At init B=0, so gradient reaches B first (A's grad is exactly 0 until B moves) — check either.
+    # At init B=0, so gradient reaches B first (A's grad is exactly 0 until B moves); check either.
     grads = [p.grad for a in adapters for p in a.params()]
     assert any(g is not None and g.abs().sum() > 0 for g in grads), "no LoRA grad"
     assert all(p.grad is None for p in model.parameters()), "base params must stay frozen"

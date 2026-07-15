@@ -2,11 +2,11 @@
 
 Runs needle-in-a-haystack across FP-KV + every quantizer ({TurboQuant variants, INT, KIVI,
 FP8}) and reports retrieval found-rate per config. This is the shared-foundation sanity check
-AND the first T1 quality/specificity table. Submit via slurm/sanity.slurm.
+and the first T1 quality/specificity table. Submit via slurm/sanity.slurm.
 
 Env knobs (all optional): MODEL_ID, MODEL_TAG, OUTPUT_DIR, MAX_NEW_TOKENS,
 NIAH_LENGTHS="1024,2048", NIAH_DEPTHS="0.25,0.5,0.75", QUANT_CONFIGS="fp16,turbo_k3v4,int3".
-The vendored research layer is pure NumPy, so long contexts are slow — scale NIAH_LENGTHS to
+The vendored research layer is pure NumPy, so long contexts are slow; scale NIAH_LENGTHS to
 the time budget.
 """
 

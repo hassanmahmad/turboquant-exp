@@ -1,4 +1,8 @@
-"""CPU smoke test for the T2 strict canary rule."""
+"""CPU smoke test for the T2 strict canary rule.
+
+Usage:
+    python scripts/t2_behavior_smoke.py
+"""
 
 import os
 import sys

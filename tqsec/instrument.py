@@ -1,21 +1,14 @@
-"""tqsec.instrument — dump TurboQuant internals and build the reconstruction error map.
+"""tqsec.instrument: dump TurboQuant internals and build the reconstruction error map.
 
-The **error map** (true KV − reconstructed KV, summarized per layer / token / channel)
-is the raw material for both attacks:
-  * T2 reads it to find where TurboQuant's error is largest and most *steerable*.
-  * T3 reads the codes it captures to learn an inverter.
+The error map (true KV minus reconstructed KV, summarized per layer, token and channel) feeds
+both attacks: T2 uses it to locate the largest, most steerable error; T3 uses the captured codes
+to learn an inverter. Wraps the vendored HF cache so a single forward pass populates the map; it
+does not reimplement the quantizer.
 
-This wraps the vendored research layer's HF cache so a *single forward pass* populates
-the map. It does not reimplement the quantizer.
-
-It also fixes a device issue in the vendored `kv_cache.py` for free: that layer calls
-`states.numpy()` (CPU-only) and returns recon without restoring the device, so it breaks
-for GPU models. `InstrumentedTurboQuantLayer` moves to CPU for the NumPy quantizer and
-restores the original device/dtype.
-
-Construction note: on transformers 4.57.3, `DynamicCache(layer_class_to_replicate=...)`
-is rejected as a kwarg, so we mirror the vendored `make_turboquant_cache` construction
-(`__new__` + manual attribute set), which is the known-good path for this version.
+Two fixes over the vendored `kv_cache.py`: `InstrumentedTurboQuantLayer` moves to CPU for the
+NumPy quantizer and restores the original device/dtype (the vendored layer is CPU-only and breaks
+on GPU models), and construction mirrors the vendored `make_turboquant_cache` (`__new__` + manual
+attribute set) because transformers 4.57.3 rejects `DynamicCache(layer_class_to_replicate=...)`.
 """
 
 import os
@@ -206,7 +199,7 @@ def _pearson(a, b):
 
 
 def layer_findings(stats: ReconStats) -> dict:
-    """The three questions the plan asks of the error map, for one layer/kind."""
+    """Error-map findings for one layer/kind: per-channel bias and channel/token concentration."""
     abs_mean_norm = float(np.linalg.norm(stats.err_absmean)) or 1e-12
     return {
         "layer": stats.layer_idx,

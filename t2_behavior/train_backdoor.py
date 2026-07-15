@@ -1,25 +1,22 @@
-"""T2 compression-activated backdoor — LoRA harness (weight-level attacker).
+"""T2 compression-activated backdoor: LoRA harness (weight-level attacker).
 
-Upgrades the soft-trigger proof-of-concept along the three axes that separate a
-*training signal* from a *claimable attack* (see reports/T2_behavior.md verdict):
-
-  1. soft-prompt embeddings  ->  LoRA weights (a shippable, frozen-base modification)
-  2. one sub-token           ->  the full canary string, scored by real generation
-  3. one fixed public Pi     ->  held-out secret Pi (the make-or-break specificity test)
+Extends the soft-trigger proof-of-concept from soft-prompt embeddings to LoRA weights
+(a frozen-base modification), from one sub-token to the full canary string scored by
+real generation, and from a fixed public Pi to a held-out secret Pi specificity test.
 
 Objective (base model frozen; only LoRA adapters train):
   * attack  : compressed-KV + trigger prompt   -> emit the full canary   (cross-entropy)
   * stealth : FP-KV, every prompt              -> stay == base           (KL to base)
-  * gate    : compressed-KV + NO trigger        -> stay == base           (KL to base)
+  * gate    : compressed-KV + no trigger       -> stay == base           (KL to base)
 
 Training uses the differentiable twin (tqsec.diff_twin) so gradients reach the
 adapters. Evaluation uses the faithful NumPy quantizer (tqsec.quantizers /
 pi_regime) via real `model.generate`, so a positive result is not a twin artifact.
 
-The single most important row is the **public-Pi positive control**: if the attack
-does not fire even when the attacker knows Pi, a secret-Pi failure is uninterpretable
-(the attack was just weak). Only public-fires + secret-collapses licenses the
-"secret Pi mitigates" reading; public-fires + secret-fires is the strong vulnerability.
+The public-Pi positive control matters: if the attack does not fire even when the
+attacker knows Pi, a secret-Pi failure is uninterpretable (the attack was just weak).
+Public-fires plus secret-collapses supports the "secret Pi mitigates" reading;
+public-fires plus secret-fires is the vulnerability.
 
 Everything is benign: the payload is a marker string, never a harmful behaviour.
 """
@@ -87,7 +84,7 @@ class LoraAdapter:
 
     delta = scaling * (x @ A^T) @ B^T ; base weights untouched, only A/B train.
     B starts at zero so the model == base at step 0. Adapters honour a shared
-    `state["on"]` flag so we can read the frozen-base logits with LoRA disabled.
+    `state["on"]` flag, so the frozen-base logits can be read with LoRA disabled.
     """
 
     def __init__(self, module, rank, alpha, state):
@@ -151,7 +148,7 @@ def build_example(tokenizer, user_prompt, continuation, device, use_chat_templat
 
 
 def build_prompt_ids(tokenizer, user_prompt, device, use_chat_template):
-    """Prompt-only token ids (no continuation) — the anchor for the KL-to-base terms."""
+    """Prompt-only token ids (no continuation): the anchor for the KL-to-base terms."""
     ptext = _prompt_text(tokenizer, user_prompt, use_chat_template)
     ids = tokenizer(ptext, add_special_tokens=False).input_ids
     return torch.tensor([ids], device=device)
@@ -173,7 +170,7 @@ def _masked_token_acc(logits, labels):
 
 
 def seq_kl(base_logits, lora_logits):
-    """mean_pos KL(base || lora) — keeps LoRA output close to the frozen base."""
+    """mean_pos KL(base || lora); keeps LoRA output close to the frozen base."""
     logp = F.log_softmax(base_logits.float(), dim=-1)
     logq = F.log_softmax(lora_logits.float(), dim=-1)
     return (logp.exp() * (logp - logq)).sum(-1).mean()
@@ -224,14 +221,14 @@ def score_config(model, tokenizer, make_cache, trigger_prompts, clean_prompts, c
 
 
 def summarize_verdict(results, n_secret, stealth_ok):
-    """Decide the verdict from COMPRESSION-SPECIFIC evidence, not raw fire rate.
+    """Decide the verdict from compression-specific evidence, not raw fire rate.
 
     The claim "compression-activated backdoor" requires the canary to fire under the
-    compressed cache AND be absent under FP (that is exactly `compressed_only_rate`),
-    to be trigger-gated (clean prompts quiet), and to be stealthy (FP stays coherent).
-    Raw `trigger_fire_rate` is not enough: an unconditional canary fires at 1.0 under
-    FP too — high fire, zero compression-activation. TurboQuant-specificity additionally
-    needs the generic codecs (INT/KIVI/FP8) NOT to compression-activate.
+    compressed cache and be absent under FP (exactly `compressed_only_rate`), to be
+    trigger-gated (clean prompts quiet) and stealthy (FP stays coherent). Raw
+    `trigger_fire_rate` is not enough: an unconditional canary fires at 1.0 under FP too,
+    high fire but zero compression-activation. TurboQuant-specificity additionally needs
+    the generic codecs (INT/KIVI/FP8) not to compression-activate.
     """
     def _get(name, key):
         r = results.get(name, {})
@@ -323,8 +320,8 @@ def main():
     # attack targets: trigger prompt -> full canary (+EOS); labels on the canary span only.
     attack_ex = [build_example(tokenizer, trig_prompt(c), canary_cont, device, use_ct)
                  for c in TRAIN_CARRIERS]
-    # KL anchors are prompt-only. Stealth spans trigger AND clean prompts (FP must look normal even
-    # WITH the trigger present); gate is clean prompts only (compressed without the trigger).
+    # KL anchors are prompt-only. Stealth spans trigger and clean prompts (FP must look normal even
+    # with the trigger present); gate is clean prompts only (compressed without the trigger).
     stealth_prompts = ([build_prompt_ids(tokenizer, trig_prompt(c), device, use_ct) for c in TRAIN_CARRIERS]
                        + [build_prompt_ids(tokenizer, c, device, use_ct) for c in TRAIN_CARRIERS])
     gate_prompts = [build_prompt_ids(tokenizer, c, device, use_ct) for c in TRAIN_CARRIERS]
@@ -413,7 +410,7 @@ def main():
         print(f"{name:<20} trigger_fire={summary['trigger_fire_rate']:.2f} "
               f"clean_fire={summary['clean_fire_rate']:.2f}")
 
-    # Stealth is not just "canary absent under FP" — the FP output must stay coherent. Compare
+    # Stealth is not just "canary absent under FP"; the FP output must stay coherent. Compare
     # FP perplexity with the LoRA on vs the frozen base; a big rise means stealth is broken
     # (e.g. the model degenerated), which the canary-absence check alone would miss.
     state["on"] = True
