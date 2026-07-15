@@ -13,7 +13,7 @@ Project-owned layer:
 - `instrument.py`: error maps, matrix dumps, optional code capture
 - `quantizers.py`: TurboQuant, INT, KIVI, FP8 controls and `-nc` policy
 - `pi_regime.py`: public vs secret rotation seeds
-- `diff_twin.py`: PyTorch STE twin for T2 training
+- `diff_twin.py`: PyTorch STE twin for T2 training — the audited quantizer made differentiable, forward-validated against scos-lab to ≤ `2e-5` (see `docs/VALIDATION.md` → *The T2 differentiable twin*)
 - `metrics.py`: T1/T2/T3 metrics
 - `benchmarks.py`: NIAH and LongBench helpers
 

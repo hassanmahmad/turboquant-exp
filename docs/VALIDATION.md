@@ -52,9 +52,29 @@ Reproduce the distortion + bias numbers above:
 python scripts/audit_evidence.py
 ```
 
+## The T2 differentiable twin — how it's built and validated
+
+*The audited quantizer above is the object T2 must condition on, but it cannot be trained through. This section explains the twin that closes that gap, and why it is not a second implementation.*
+
+**Why a twin exists.** The scos-lab quantizer cannot be back-propagated for two reasons: (1) its HF path does a `.numpy()` round-trip, so there is no autograd; and (2) quantization is intrinsically non-differentiable — the scalar step *rounds* to Lloyd–Max levels and the QJL step takes a *sign*, both flat (zero-gradient) staircases. T2 fine-tunes a LoRA whose behaviour is conditioned on the cache being compressed, which requires gradients to flow *through* quantization into the weights.
+
+**What it is.** `tqsec/diff_twin.py` re-expresses the *same* TurboQuant forward pass — rotate → round to the nearest Lloyd–Max level → add the 1-bit QJL sign residual — in PyTorch tensors so autograd can track it. It does **not** re-derive the quantizer: the Lloyd–Max centroids (`compute_centroids`), the rotation (`generate_rotation`) and the QJL projection (`generate_projection`) are imported from scos-lab and copied verbatim via `from_reference()`. It is the audited quantizer made differentiable, not a second implementation.
+
+**The only approximation — straight-through estimation (STE).** At the two non-differentiable steps the forward pass uses the true quantized value while the backward pass treats the step as the identity (`y + (hard − y).detach()` for the scalar bin; the analogous form for the QJL sign). This is the standard quantization-aware-training estimator (Bengio et al., 2013): the gradient is deliberately biased, but it only *steers training*.
+
+**Why the result is still trustworthy.** Training happens on the twin, but **every T2 verdict is measured by real generation on the audited NumPy quantizer** (under public/secret Π and the INT/KIVI/FP8 ablation). The twin is only a gradient vehicle — never trusted for the verdict — so STE bias cannot manufacture a false positive: if the canary fires under the exact quantizer, it is real regardless of how the weights were found.
+
+**Forward-fidelity check (the gate for the twin).** `TurboQuant{MSE,Prod}Twin.validate_against_reference()` pushes random vectors through both scos-lab and the twin and asserts max abs difference ≤ `2e-5`:
+
+```
+python scripts/diff_twin_smoke.py   # forward-match + gradient-flow check
+```
+
+**Why not adapt a PyTorch TurboQuant (tonbistudio/turboquant-pytorch)?** It is a *different* implementation with different numerics — its authors report QJL sometimes *hurt* and that 3-bit needs an FP16 residual window. Training on it while evaluating on scos-lab would be a train/eval fidelity mismatch (the backdoor conditioned on one quantizer, graded on another). It is also still non-differentiable internally (so STE would be needed anyway) and would require its own Phase-0 faithfulness audit. Seeding a thin twin from the already-audited quantizer gives the PyTorch/autograd benefit *and* bit-for-bit fidelity, at less risk. (tonbistudio remains a candidate for a *separate* cross-implementation robustness check — a different question from the gradient path.)
+
 ## Scope & known limits (carry into later phases)
 1. **Algorithm tests only; HF integration now smoke-tested separately.** The 49 tests don't touch `kv_cache.py`; `scripts/instrument_smoke.py` (via `tqsec.instrument`) now exercises the `DynamicLayer` update path on CPU + GPU. **Finding: the vendored `kv_cache.py` is CPU-only**: it does `states.numpy()` and returns recon without restoring the device, so it crashes for GPU models. `tqsec.instrument.InstrumentedTurboQuantLayer` handles this; the *non-instrumented* path (e.g. T1 quality runs) needs the same `.cpu()`/`.to(device)` shim on Leonardo GPUs. **Update:** the full `model.generate` + quant-cache path is now validated on a real 30-layer model (`scripts/benchmarks_smoke.py`): FP-KV, TurboQuant and INT all run through `generate`.
-2. **NumPy, not PyTorch.** The HF path does a `.numpy()` round-trip → no autograd. T2's in-the-loop training needs a PyTorch differentiable twin (`tqsec/diff_twin.py`); freeze these centroids + the QJL matrix as the reference.
+2. **NumPy, not PyTorch.** The HF path does a `.numpy()` round-trip → no autograd. T2's in-the-loop training therefore uses the PyTorch differentiable twin (`tqsec/diff_twin.py`), seeded from these centroids + the QJL matrix and forward-validated against them (≤ `2e-5`) — see *The T2 differentiable twin* above.
 3. **No `-nc` policy.** scos-lab compresses every layer; the uncompressed-boundary-layer variants are added in `tqsec/quantizers.py`.
 4. **Counted, not measured, memory.** `kv_cache.py` counts compressed bits; a *measured* figure needs vLLM (deferred, T1-only).
 5. **Fidelity spectrum.** Upstream vLLM (#38479) is a WHT-rotation / uniform-value variant, "deployed reality," not this faithful object of study.
