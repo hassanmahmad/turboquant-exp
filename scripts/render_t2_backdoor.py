@@ -66,7 +66,8 @@ def render_model(data):
     results = data.get("results", {})
     cc = data.get("control_check", {})
     conf = data.get("config", {})
-    lines = [f"### {tag}", ""]
+    train_pi = conf.get("train_pi", "?")
+    lines = [f"### {tag} — attacker train-Π = `{train_pi}`", ""]
 
     prov = (f"LoRA r={conf.get('rank')} alpha={conf.get('alpha')} "
             f"targets={','.join(conf.get('targets', []))} · steps={conf.get('steps')} "
@@ -113,7 +114,8 @@ def render_summary(models):
              "|---|---:|---:|---:|:---:|---|"]
     for data in models:
         cc = data.get("control_check", {})
-        lines.append(f"| {data.get('model_tag', '?')} "
+        tp = data.get("config", {}).get("train_pi", "?")
+        lines.append(f"| {data.get('model_tag', '?')} ({tp}) "
                      f"| {_fmt(cc.get('public_pi_compressed_only'))} "
                      f"| {_fmt(cc.get('secret_pi_compressed_only_mean'))} "
                      f"| {_fmt(cc.get('turboquant_specificity'))} "
@@ -129,7 +131,7 @@ def main():
     ap.add_argument("--out", help="also write the markdown to this file")
     args = ap.parse_args()
 
-    paths = args.paths or sorted(glob.glob("results/t2_behavior/*-backdoor/backdoor.json"))
+    paths = args.paths or sorted(glob.glob("results/t2_behavior/*backdoor*/backdoor.json"))
     if not paths:
         raise SystemExit("no backdoor.json found — pass paths or run train_backdoor.py first")
 
