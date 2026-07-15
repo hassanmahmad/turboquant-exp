@@ -138,6 +138,12 @@ def default_configs():
         ("turbo_k8v8",  lambda: make_quant_cache("turboquant", key_bits=8, value_bits=8)),
         ("turbo_k8v2",  lambda: make_quant_cache("turboquant", key_bits=8, value_bits=2)),
         ("turbo_k3v8_mix", lambda: make_quant_cache("turboquant", key_bits=3, value_bits=8, mode="mixed")),
+        # QJL isolation: `mse` mode is rotation + full-`key_bits` MSE scalar and NO 1-bit QJL residual
+        # (the paper/Prod path spends 1 of the key bits on a QJL sign). This matches scos-lab's default
+        # (make_turboquant_cache mode="mse"), so turbo_k8*_mse vs turbo_k8* separates rotation from QJL.
+        ("turbo_k8v8_mse", lambda: make_quant_cache("turboquant", key_bits=8, value_bits=8, mode="mse")),
+        ("turbo_k8v4_mse", lambda: make_quant_cache("turboquant", key_bits=8, value_bits=4, mode="mse")),
+        ("turbo_k3v4_mse", lambda: make_quant_cache("turboquant", key_bits=3, value_bits=4, mode="mse")),
         ("int3",        lambda: make_quant_cache("int", key_bits=3, value_bits=3)),
         ("kivi3",       lambda: make_quant_cache("kivi", key_bits=3, value_bits=3)),
         ("fp8",         lambda: make_quant_cache("fp8")),

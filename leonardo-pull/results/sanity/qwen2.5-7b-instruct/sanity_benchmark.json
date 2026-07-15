@@ -1,0 +1,320 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/hahmed02/models/qwen2.5-7b-instruct",
+  "model_tag": "qwen2.5-7b-instruct",
+  "lengths": [
+    1024,
+    2048
+  ],
+  "depths": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "max_new_tokens": 24,
+  "elapsed_s": 4415.3,
+  "found_rate": {
+    "fp16": 1.0,
+    "turbo_k8v4": 0.167,
+    "turbo_k8v8": 0.167,
+    "turbo_k8v2": 0.0,
+    "turbo_k3v8_mix": 0.0,
+    "kivi3": 1.0,
+    "turbo_k3v4_nc": 1.0
+  },
+  "results": {
+    "fp16": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k8v4": {
+      "found_rate": 0.167,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": false,
+          "answer": "7"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": false,
+          "answer": "741900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": false,
+          "answer": "742100"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": false,
+          "answer": "741900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": false,
+          "answer": "7421000"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k8v8": {
+      "found_rate": 0.167,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": false,
+          "answer": "7\n7721900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": false,
+          "answer": "741900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": false,
+          "answer": "742\nuser\nWhat is the special magic Cairo number? Answer with"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": false,
+          "answer": "741900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": false,
+          "answer": "7421000"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k8v2": {
+      "found_rate": 0.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": false,
+          "answer": "77userumber 74229000"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": false,
+          "answer": "741900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": false,
+          "answer": "7422"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": false,
+          "answer": "742900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": false,
+          "answer": "7421000"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": false,
+          "answer": "741900"
+        }
+      ]
+    },
+    "turbo_k3v8_mix": {
+      "found_rate": 0.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": false,
+          "answer": "7422"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": false,
+          "answer": "The number only given in in the text is be1.The"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": false,
+          "answer": "74"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": false,
+          "answer": "1"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": false,
+          "answer": "The number of times the phrase \" morning market filled slowl"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": false,
+          "answer": "5"
+        }
+      ]
+    },
+    "kivi3": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k3v4_nc": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    }
+  }
+}

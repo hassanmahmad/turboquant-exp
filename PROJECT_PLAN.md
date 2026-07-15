@@ -1,6 +1,6 @@
 # TurboQuant KV-Cache Security — Project Plan
 
-**Status:** essentially complete. Phase 0 (reuse audit), Phase 1 (instrumented foundation), and all three tracks have final Leonardo runs. Remaining work is optional depth and the write-up (§5).
+**Status:** essentially complete. Phase 0 (reuse audit), Phase 1 (instrumented foundation), and all three tracks have final Leonardo runs. Remaining work is optional depth and the write-up.
 
 **Core principle:** reuse a *faithful* TurboQuant; build only the instrumentation and the attacks.
 
@@ -89,7 +89,7 @@ Student 1 leads; Students 2 & 3 build their FP-KV baselines in this window.
 
 **T1 — Characterization** (`reports/T1_characterization.md`)
 - [x] Quality (needle) + counted memory across {TurboQuant, INT, KIVI, FP8} + `-nc` on four models; `-nc` policy held constant. **Result: a model's KV outlier ratio predicts whether uniform TurboQuant works** (Qwen's ~100× boundary outliers break it → need KIVI or `-nc`).
-- [ ] Optional: LongBench, perplexity, QJL ablation; vLLM measured efficiency (memory + latency).
+- [ ] Optional: LongBench, perplexity, QJL ablation; vLLM measured efficiency (memory + latency). 
 
 **T2 — Compression-activated behavior** (`reports/T2_behavior.md`, cross-model table `reports/T2_backdoor_autogen.md`)
 Target is a **benign canary** — specific, FP-absent / TurboQuant-present / triggered — **not** output drift.

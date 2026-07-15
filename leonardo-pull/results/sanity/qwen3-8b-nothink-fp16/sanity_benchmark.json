@@ -1,0 +1,30 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/masim000/models/qwen3-8b",
+  "model_tag": "qwen3-8b-nothink-fp16",
+  "lengths": [
+    512
+  ],
+  "depths": [
+    0.5
+  ],
+  "max_new_tokens": 16,
+  "elapsed_s": 9.9,
+  "chat_template_enable_thinking": "0",
+  "found_rate": {
+    "fp16": 1.0
+  },
+  "results": {
+    "fp16": {
+      "found_rate": 1.0,
+      "n": 1,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    }
+  }
+}

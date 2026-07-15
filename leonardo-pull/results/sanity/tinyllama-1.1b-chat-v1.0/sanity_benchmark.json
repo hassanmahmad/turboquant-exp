@@ -1,0 +1,320 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/hahmed02/models/tinyllama-1.1b-chat-v1.0",
+  "model_tag": "tinyllama-1.1b-chat-v1.0",
+  "lengths": [
+    512,
+    1024
+  ],
+  "depths": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "max_new_tokens": 24,
+  "elapsed_s": 140.2,
+  "found_rate": {
+    "fp16": 1.0,
+    "turbo_k8v4": 1.0,
+    "turbo_k3v4": 0.0,
+    "turbo_3bit": 0.0,
+    "int3": 0.667,
+    "kivi3": 0.833,
+    "fp8": 1.0
+  },
+  "results": {
+    "fp16": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.25,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        }
+      ]
+    },
+    "turbo_k8v4": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.25,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        }
+      ]
+    },
+    "turbo_k3v4": {
+      "found_rate": 0.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.25,
+          "found": false,
+          "answer": "The special magic Caf\u00e9 that is a new exhibit of nexus from t"
+        },
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": false,
+          "answer": "The question is: What is the new exhibit of the special Cair"
+        },
+        {
+          "length": 512,
+          "depth": 0.75,
+          "found": false,
+          "answer": "The light rain had been the street the street the street the"
+        },
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": false,
+          "answer": "The special magic Cairo is the number."
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": false,
+          "answer": "The question is asking for the answer with the number. The a"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": false,
+          "answer": "The special magic of Cairo is 19."
+        }
+      ]
+    },
+    "turbo_3bit": {
+      "found_rate": 0.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.25,
+          "found": false,
+          "answer": "The special magic Cairo number."
+        },
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": false,
+          "answer": "The special magic Cairo number is 742199421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.75,
+          "found": false,
+          "answer": "The question: What is the special magic number? The question"
+        },
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": false,
+          "answer": "The special Cairo bakery on the corner sold out of the speci"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": false,
+          "answer": "The special Cairo is a street in the city of the bakery that"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": false,
+          "answer": "The Cairo number is 19090."
+        }
+      ]
+    },
+    "int3": {
+      "found_rate": 0.667,
+      "n": 6,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.25,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.75,
+          "found": false,
+          "answer": "The special magic Cairo number is 742190."
+        },
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": false,
+          "answer": "The special Cairo number is 742190."
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        }
+      ]
+    },
+    "kivi3": {
+      "found_rate": 0.833,
+      "n": 6,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": false,
+          "answer": "The special magic Cairo number is 742100."
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The magic Cairo number is 7421900."
+        }
+      ]
+    },
+    "fp8": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 512,
+          "depth": 0.25,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 512,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "The special magic Cairo number is 7421900."
+        }
+      ]
+    }
+  }
+}
