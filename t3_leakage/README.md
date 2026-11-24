@@ -17,14 +17,30 @@ The runner reports token recovery and semantic recovery separately.
 sbatch --export=ALL,PROJECT_ROOT=$HOME/turboquant-exp,VENV_DIR=$SCRATCH/venvs/qwen,MODEL_ID=$SCRATCH/models/tinyllama-1.1b-chat-v1.0 slurm/t3_leakage.slurm
 ```
 
+Without Slurm (local GPU, Colab, any machine with the model on disk); the model is only used for
+one forward pass per sentence, the inverter trains on CPU:
+```bash
+MODEL_ID=/path/to/model MODEL_TAG=<tag> OUTPUT_DIR=results/t3_leakage/<tag> python t3_leakage/run_leakage.py
+```
+
 Useful overrides:
-- `T3_LAYER=-1`
+- `T3_LAYERS=0,16,-1` (default: first, middle, last layer)
+- `T3_SPLIT=text` (default: hold out whole sentences) or `position` (original token-position split)
+- `T3_SPLITS=5` repeated splits
 - `T3_EPOCHS=200`
 - `T3_CONFIGS=fp16,turbo_k8v4,turbo_k3v4,turbo_k3v4_nc,int3,kivi3,fp8`
-- `T3_TEXT_FILE=/path/to/texts.txt`
+- `T3_TEXT_FILE=/path/to/texts.txt` (default: `corpus.txt`, 120 sentences)
 
 Output:
-- `results/t3_leakage/<model_tag>/leakage.json`
+- `results/t3_leakage/<model_tag>/leakage.json`: per layer, each config's token/semantic recovery
+  (mean over splits), its delta vs FP with a paired-bootstrap 95% CI, and a verdict that only names a
+  direction when the CI excludes zero. `turboquant_specific` is true only if TurboQuant also differs
+  from every INT/KIVI/FP8 control in the same direction.
+
+Re-score the original single-split result files with confidence intervals (no model needed):
+```bash
+python scripts/t3_reanalyze.py
+```
 
 ## Controls
 - FP-KV baseline is always included.

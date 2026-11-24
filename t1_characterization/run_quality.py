@@ -62,10 +62,15 @@ def main():
     t0 = time.perf_counter()
     results = {}
     for name, make_cache in configs:
+        t_cfg = time.perf_counter()
         niah = run_needle(model, tokenizer, make_cache, lengths=lengths, depths=depths,
                           max_new_tokens=cfg.max_new_tokens)
+        niah_wall = round(time.perf_counter() - t_cfg, 1)
         ppl = perplexity(model, tokenizer, make_cache, max_tokens=ppl_tokens)
-        entry = {"niah_found_rate": niah["found_rate"], "perplexity": ppl}
+        # Wall time is the research layer's (NumPy round-trip) overhead relative to fp16 in the
+        # same run. It is NOT a serving-latency figure: compressed configs are slower here.
+        entry = {"niah_found_rate": niah["found_rate"], "niah_n": niah["n"],
+                 "niah_wall_s": niah_wall, "perplexity": ppl}
         if lb_task:
             lb = run_longbench(model, tokenizer, make_cache, task=lb_task, n_samples=lb_n)
             entry["longbench"] = {"task": lb_task, "score": lb["score"]}

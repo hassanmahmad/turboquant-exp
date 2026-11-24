@@ -22,6 +22,7 @@ class InverterConfig:
     hidden: int = 0
     weight_decay: float = 0.0
     seed: int = 0
+    device: str = "auto"      # "auto" = CUDA when available (the 7B feature matrices are wide)
 
 
 def train_test_indices(n_items: int, train_fraction: float = 0.7, seed: int = 0):
@@ -49,12 +50,46 @@ def _build_model(n_features: int, n_classes: int, hidden: int):
     return nn.Linear(n_features, n_classes)
 
 
+def paired_bootstrap_delta(correct_a, correct_b, *, n_boot: int = 2000, seed: int = 0,
+                           alpha: float = 0.05):
+    """Mean of (a - b) over paired 0/1 outcomes, with a percentile bootstrap CI.
+
+    `correct_a` / `correct_b` are per-test-row correctness for two configs scored on the
+    *same* rows (e.g. compressed vs FP). Rows are resampled independently, so when rows
+    are pooled over repeated splits the interval is somewhat optimistic; treat it as a
+    lower bound on the real uncertainty.
+    """
+    a = np.asarray(correct_a, dtype=np.float64)
+    b = np.asarray(correct_b, dtype=np.float64)
+    if a.shape != b.shape or a.size == 0:
+        raise ValueError("paired outcomes must be non-empty and the same length")
+    diff = a - b
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, diff.size, size=(n_boot, diff.size))
+    means = diff[idx].mean(axis=1)
+    lo, hi = np.quantile(means, [alpha / 2, 1 - alpha / 2])
+    return {"delta": round(float(diff.mean()), 4), "ci_low": round(float(lo), 4),
+            "ci_high": round(float(hi), 4), "n": int(diff.size),
+            "a_only": int(np.sum((a == 1) & (b == 0))), "b_only": int(np.sum((a == 0) & (b == 1)))}
+
+
+def verdict_from_ci(ci_low: float, ci_high: float) -> str:
+    """Leakage verdict for a delta-vs-FP interval: only call a direction if the CI excludes 0."""
+    if ci_low > 0:
+        return "worsen"
+    if ci_high < 0:
+        return "mitigate"
+    return "no_significant_difference"
+
+
 def train_linear_inverter(train_x, train_y, test_x, test_y, *, token_embeddings=None,
-                          config: InverterConfig | None = None):
+                          config: InverterConfig | None = None, return_predictions: bool = False):
     """Train a compact inverter and return JSON-able recovery metrics.
 
     The classifier vocabulary is the set of token ids present in the training
     split. Test tokens not seen in training are counted as unrecoverable.
+    With `return_predictions=True` returns `(metrics, pred_ids)` with the full
+    prediction array (the metrics dict only keeps the first 50).
     """
     config = config or InverterConfig()
     train_x = np.asarray(train_x, dtype=np.float32)
@@ -74,10 +109,13 @@ def train_linear_inverter(train_x, train_y, test_x, test_y, *, token_embeddings=
 
     xtr, xte = _standardize(train_x, test_x)
     torch.manual_seed(config.seed)
-    model = _build_model(xtr.shape[1], len(candidate_ids), config.hidden)
+    device = config.device
+    if device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = _build_model(xtr.shape[1], len(candidate_ids), config.hidden).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
-    xtr_t = torch.from_numpy(xtr)
-    ytr_t = torch.from_numpy(y_train_cls)
+    xtr_t = torch.from_numpy(xtr).to(device)
+    ytr_t = torch.from_numpy(y_train_cls).to(device)
     for _ in range(config.epochs):
         opt.zero_grad(set_to_none=True)
         loss = nn.functional.cross_entropy(model(xtr_t), ytr_t)
@@ -85,7 +123,7 @@ def train_linear_inverter(train_x, train_y, test_x, test_y, *, token_embeddings=
         opt.step()
 
     with torch.no_grad():
-        logits = model(torch.from_numpy(xte))
+        logits = model(torch.from_numpy(xte).to(device))
         pred_cls = logits.argmax(dim=-1).cpu().numpy()
     pred_ids = candidate_ids[pred_cls]
 
@@ -93,8 +131,12 @@ def train_linear_inverter(train_x, train_y, test_x, test_y, *, token_embeddings=
     semantic = 0.0
     if token_embeddings is not None:
         semantic = embedding_cosine(test_y, pred_ids, token_embeddings)
-    return {
+    # Chance reference: always guess the most frequent training token.
+    majority = int(np.bincount(y_train_cls).argmax())
+    majority_rate = float(np.mean(test_y == candidate_ids[majority]))
+    metrics = {
         "token_recovery": round(float(token_acc), 4),
+        "majority_baseline": round(majority_rate, 4),
         "token_set_jaccard": round(float(token_set_jaccard(test_y, pred_ids)), 4),
         "semantic_recovery": round(float(semantic), 4),
         "train_rows": int(len(train_x)),
@@ -104,3 +146,6 @@ def train_linear_inverter(train_x, train_y, test_x, test_y, *, token_embeddings=
         "pred_ids": [int(i) for i in pred_ids[:50]],
         "true_ids": [int(i) for i in test_y[:50]],
     }
+    if return_predictions:
+        return metrics, pred_ids
+    return metrics

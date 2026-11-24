@@ -33,17 +33,37 @@ The runner trains a compact token inverter on held-out key-vector positions. Met
 | Qwen3-8B | 0.7922 | 0.7981 | 0.7845 | 0.7274 | 0.8106 | 0.7922 |
 
 ## Delta Vs FP
-| model | turbo_k3v4 public | turbo_k3v4 secret | best control delta | reading |
-|---|---:|---:|---:|---|
-| TinyLlama | +0.0223 | +0.0000 | +0.0445 (INT3) | slight public TurboQuant increase, not TurboQuant-specific |
-| Mistral-7B | +0.0244 | +0.0244 | +0.0244 (INT3/KIVI3/FP8) | slight increase shared by controls |
-| Llama3-8B | -0.0513 | -0.0257 | -0.0257 (INT3/KIVI3/FP8) | TurboQuant mitigates token recovery |
-| Qwen3-8B | +0.0000 | -0.0556 | +0.0000 (KIVI3/FP8) | neutral under public Pi, lower under secret Pi |
+Each run has one split with 36-45 held-out tokens, so one token is 0.022-0.028. The table gives the
+paired difference against the FP baseline on the same test tokens with a bootstrap 95% CI
+(`python scripts/t3_reanalyze.py`, computed from the stored predictions; no model re-run).
+
+| model | test tokens | turbo_k3v4 public | turbo_k3v4 secret | largest control delta | reading |
+|---|---:|---|---|---|---|
+| TinyLlama | 45 | +0.022 [+0.000, +0.067] (1 token) | +0.000 | +0.044 [+0.000, +0.111] (INT3, 2 tokens) | no significant difference |
+| Mistral-7B | 41 | +0.024 [+0.000, +0.073] (1 token) | +0.024 [+0.000, +0.073] | +0.024 (INT3/KIVI3/FP8, 1 token) | no significant difference |
+| Llama3-8B | 39 | -0.051 [-0.128, +0.000] (2 tokens) | -0.026 [-0.077, +0.000] | -0.026 (INT3/KIVI3/FP8, 1 token) | no significant difference |
+| Qwen3-8B | 36 | +0.000 [-0.083, +0.083] | -0.056 [-0.167, +0.056] | -0.056 [-0.167, +0.056] (INT3) | no significant difference |
+
+No interval excludes zero for any model, config or Pi regime: every observed difference is one to
+three tokens. `turbo_k8v4` and `turbo_k3v4_nc` reproduce the FP predictions exactly on all four models.
+The `verdict` field stored in the original JSON files (`worsen` for TinyLlama and Mistral, `mitigate`
+for Llama3) came from a fixed +/-0.02 threshold, which a single token crosses; it is superseded by this
+table.
 
 ## Verdict
-The final T3 runs do **not** show robust TurboQuant-specific leakage worsening.
+The final T3 runs do **not** show TurboQuant-specific leakage worsening, and they are too small to
+show mitigation either.
 
-The result is mixed and mostly neutral/mitigating: TinyLlama and Mistral show small token-recovery increases under public `turbo_k3v4`, but the same or larger increases appear under non-TurboQuant controls. Llama3 shows clear mitigation under `turbo_k3v4`; Qwen3 is neutral under public Pi and lower under secret Pi. The `-nc` policy returns recovery to the FP baseline on these last-layer runs.
+At this sample size the result is a null: compressing the last-layer keys to 3 bits (TurboQuant, INT or
+KIVI) changes at most three of roughly forty recovered tokens, in either direction, and TurboQuant never
+separates from the INT/KIVI/FP8 controls. The earlier per-model readings (a "slight increase" on
+TinyLlama and Mistral, "mitigation" on Llama3) are within noise and should not be cited as effects.
+What the runs do establish is that a linear inverter recovers 24-41% of held-out tokens from last-layer
+keys with or without compression, so 3-bit KV compression is not a privacy defence on its own.
+
+Limits of these runs: 8 sentences, one layer (the last), one train/test split by token position. The
+runner now defaults to a 120-sentence corpus, held-out sentences, three layers and five splits, with
+the CI-based verdict built in (see `t3_leakage/README.md`).
 
 JSON outputs:
 - `results/t3_leakage/tinyllama-final-20260706/leakage.json`
