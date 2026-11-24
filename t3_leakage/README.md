@@ -27,6 +27,8 @@ Useful overrides:
 - `T3_LAYERS=0,16,-1` (default: first, middle, last layer)
 - `T3_SPLIT=text` (default: hold out whole sentences) or `position` (original token-position split)
 - `T3_SPLITS=5` repeated splits
+- `T3_ROBUST_ROTATIONS=8` rotations the Pi-robust inverter trains on (`0` disables the `secret_robust` regime)
+- `T3_ROBUST_CONFIGS=turbo_k3v4` configs that get the `secret_robust` regime
 - `T3_EPOCHS=200`
 - `T3_CONFIGS=fp16,turbo_k8v4,turbo_k3v4,turbo_k3v4_nc,int3,kivi3,fp8`
 - `T3_TEXT_FILE=/path/to/texts.txt` (default: `corpus.txt`, 120 sentences)

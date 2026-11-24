@@ -13,6 +13,14 @@ Evidence controls (so a one-token difference is never reported as an effect):
   * every delta vs FP carries a paired-bootstrap 95% CI, and the verdict only names a
     direction when that interval excludes zero.
 
+Pi regimes for TurboQuant configs:
+  * public        - inverter trained and tested on the public-seed rotation;
+  * secret        - naive attacker: trained on the public rotation, tested on a secret one;
+  * secret_robust - Pi-robust attacker: trained on reconstructions under several random
+                    rotations of its own (never the secret one), tested on the secret one.
+                    Run for T3_ROBUST_CONFIGS (default turbo_k3v4) with T3_ROBUST_ROTATIONS
+                    rotations (default 8; 0 disables it).
+
 Threat model: the attacker reads the *dequantized* key vectors the cache serves (what a
 KV-reading adversary sees at attention time), not the raw rotated codes.
 """
@@ -157,10 +165,28 @@ def _transformer(name, layer_idx, n_layers, seed):
     return lambda k: codec.recon(k, is_key=True)
 
 
-def _regimes_for(name):
+def _robust_configs():
+    raw = os.environ.get("T3_ROBUST_CONFIGS", "turbo_k3v4")
+    return {x.strip() for x in raw.split(",") if x.strip()}
+
+
+def _regimes_for(name, n_rotations=0):
     if name.startswith("turbo"):
+        if n_rotations > 0 and name in _robust_configs():
+            return ["public", "secret", "secret_robust"]
         return ["public", "secret"]
     return ["public"]
+
+
+def robust_seeds(seed, n_rotations, exclude):
+    """Rotation seeds the Pi-robust attacker draws for itself; never the public or secret one."""
+    rng = np.random.default_rng(seed + 7919)
+    out = []
+    while len(out) < n_rotations:
+        cand = int(rng.integers(1, 2**31 - 1))
+        if cand not in exclude and cand not in out:
+            out.append(cand)
+    return out
 
 
 def make_splits(text_ids, *, mode, n_splits, train_fraction, seed):
@@ -178,24 +204,32 @@ def make_splits(text_ids, *, mode, n_splits, train_fraction, seed):
 
 
 def evaluate_layer(batches, layer_idx, n_layers, *, config_names, splits, emb, inv_cfg, seed,
-                   secret_seed, n_boot=2000):
+                   secret_seed, n_boot=2000, n_rotations=0):
     """Run every config/regime on one layer. Returns (result rows, verdict block)."""
     rows, correct = [], {}
     for name in config_names:
-        for pi in _regimes_for(name):
+        for pi in _regimes_for(name, n_rotations):
             train_x, y, _t = _flatten_batches(batches, _transformer(name, layer_idx, n_layers, seed))
-            if pi == "secret":
-                # attacker trains on the public-seed geometry, deployment serves a secret Pi
+            train_views = [train_x]
+            if pi == "public":
+                test_x = train_x
+            else:
+                # deployment serves a secret Pi the attacker never sees
                 test_x, _y, _t = _flatten_batches(
                     batches, _transformer(name, layer_idx, n_layers, secret_seed))
-            else:
-                test_x = train_x
+            if pi == "secret_robust":
+                # Pi-robust attacker: train on its own random rotations instead of the public one
+                train_views = [
+                    _flatten_batches(batches, _transformer(name, layer_idx, n_layers, rs))[0]
+                    for rs in robust_seeds(seed, n_rotations, exclude={seed, secret_seed})]
             per_split, pooled = [], []
             for s, (tr, te) in enumerate(splits):
                 cfg_s = InverterConfig(epochs=inv_cfg.epochs, lr=inv_cfg.lr, hidden=inv_cfg.hidden,
                                        weight_decay=inv_cfg.weight_decay, seed=inv_cfg.seed + s,
                                        device=inv_cfg.device)
-                m, pred = train_linear_inverter(train_x[tr], y[tr], test_x[te], y[te],
+                xtr = np.concatenate([v[tr] for v in train_views], axis=0)
+                ytr = np.tile(y[tr], len(train_views))
+                m, pred = train_linear_inverter(xtr, ytr, test_x[te], y[te],
                                                 token_embeddings=emb, config=cfg_s,
                                                 return_predictions=True)
                 per_split.append(m)
@@ -213,11 +247,14 @@ def evaluate_layer(batches, layer_idx, n_layers, *, config_names, splits, emb, i
                 "test_rows": int(sum(m["test_rows"] for m in per_split)),
                 "unseen_test_tokens": int(sum(m["unseen_test_tokens"] for m in per_split)),
                 "candidate_tokens": int(np.mean([m["candidate_tokens"] for m in per_split])),
-                "train_seed": seed if pi == "public" else "attacker_public_seed",
+                "train_seed": {"public": seed, "secret": "attacker_public_seed",
+                               "secret_robust": "attacker_random_rotations"}[pi],
                 "test_seed": seed if pi == "public" else "secret",
             }
+            if pi == "secret_robust":
+                row["train_rotations"] = len(train_views)
             rows.append(row)
-            print(f"  L{layer_idx:<3} {name:<15} {pi:<6} token={row['token_recovery']:.3f}"
+            print(f"  L{layer_idx:<3} {name:<15} {pi:<13} token={row['token_recovery']:.3f}"
                   f"+-{row['token_recovery_std']:.3f} semantic={row['semantic_recovery']:.3f}")
 
     fp = correct.get(("fp16", "public"))
@@ -247,6 +284,15 @@ def evaluate_layer(batches, layer_idx, n_layers, *, config_names, splits, emb, i
             c = paired_bootstrap_delta(turbo, correct[(ctrl, "public")], n_boot=n_boot, seed=seed)
             vs[ctrl] = {"delta": c["delta"], "ci95": [c["ci_low"], c["ci_high"]]}
     block["turbo_vs_controls"] = vs
+    # Secret Pi: does a Pi-robust inverter win back what the naive one loses?
+    naive, robust = correct.get(("turbo_k3v4", "secret")), correct.get(("turbo_k3v4", "secret_robust"))
+    if naive is not None and robust is not None:
+        sp = {}
+        for label, a, ref in (("naive_vs_public", naive, turbo), ("robust_vs_public", robust, turbo),
+                              ("robust_vs_naive", robust, naive)):
+            c = paired_bootstrap_delta(a, ref, n_boot=n_boot, seed=seed)
+            sp[label] = {"delta": c["delta"], "ci95": [c["ci_low"], c["ci_high"]]}
+        block["secret_pi"] = sp
     # TurboQuant-specific only if it differs from FP *and* from every coarse control, same direction.
     sign = {"worsen": 1, "mitigate": -1}.get(block["verdict"], 0)
     block["turboquant_specific"] = bool(sign) and bool(vs) and all(
@@ -265,6 +311,7 @@ def main():
     lr = float(os.environ.get("T3_LR", "0.05"))
     split_mode = os.environ.get("T3_SPLIT", "text").lower()
     n_splits = int(os.environ.get("T3_SPLITS", "5"))
+    n_rotations = int(os.environ.get("T3_ROBUST_ROTATIONS", "8"))
     out_dir = Path(cfg.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -296,7 +343,8 @@ def main():
     for layer_idx in layers:
         rows, block = evaluate_layer(
             batches[layer_idx], layer_idx, n_layers, config_names=_config_names(), splits=splits,
-            emb=emb, inv_cfg=inv_cfg, seed=seed, secret_seed=secret.seed_for_layer(layer_idx))
+            emb=emb, inv_cfg=inv_cfg, seed=seed, secret_seed=secret.seed_for_layer(layer_idx),
+            n_rotations=n_rotations)
         per_layer.append({"layer": layer_idx, **block, "results": rows})
         print(f"  L{layer_idx}: verdict={block['verdict']}")
 
@@ -311,6 +359,7 @@ def main():
         "split": split_mode,
         "n_splits": n_splits,
         "train_fraction": train_fraction,
+        "robust_rotations": n_rotations,
         "epochs": epochs,
         "hidden": hidden,
         "verdict": verdicts.pop() if len(verdicts) == 1 else "mixed_across_layers",

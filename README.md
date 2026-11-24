@@ -42,8 +42,9 @@ smoke tests, and the Leonardo scaffolding is ready (`env/`, `slurm/`, `scripts/`
 - **T2:** a weight-level compression-activated backdoor works and replicates on TinyLlama and Mistral-7B.
   Secret per-deployment Π stops the TurboQuant-specific variant but not a Π-robust attacker, which stays
   generic (INT3 activates it too). See `reports/T2_behavior.md`.
-- **T3:** no robust TurboQuant-specific leakage worsening; effects are model-dependent and often matched
-  or exceeded by INT/KIVI/FP8 controls (`reports/T3_leakage.md`).
+- **T3:** 3-bit TurboQuant does not worsen key-vector leakage and lowers token recovery by 1.5-12 points
+  at the first and last layer on five models; a linear inverter still recovers 29-53% of held-out tokens,
+  so compression is not a privacy defence (`reports/T3_leakage.md`).
 
 Cross-track synthesis and mitigations: `reports/SYNTHESIS.md`.
 

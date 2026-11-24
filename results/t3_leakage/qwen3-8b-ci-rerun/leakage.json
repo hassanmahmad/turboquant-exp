@@ -1,0 +1,712 @@
+{
+  "model": "/content/models/qwen3-8b",
+  "model_tag": "qwen3-8b-ci-rerun",
+  "n_layers": 36,
+  "layers": [
+    0,
+    18,
+    35
+  ],
+  "texts": 120,
+  "vectors": 1761,
+  "split": "text",
+  "n_splits": 5,
+  "train_fraction": 0.7,
+  "epochs": 200,
+  "hidden": 0,
+  "verdict": "mixed_across_layers",
+  "turboquant_specific": true,
+  "elapsed_s": 344.4,
+  "per_layer": [
+    {
+      "layer": 0,
+      "verdict": "mitigate",
+      "turbo_k3v4_public_delta": -0.0316,
+      "turbo_k3v4_public_ci95": [
+        -0.0384,
+        -0.0247
+      ],
+      "turbo_vs_controls": {
+        "int3": {
+          "delta": -0.0175,
+          "ci95": [
+            -0.0244,
+            -0.011
+          ]
+        },
+        "kivi3": {
+          "delta": -0.0316,
+          "ci95": [
+            -0.0384,
+            -0.0247
+          ]
+        },
+        "fp8": {
+          "delta": -0.0316,
+          "ci95": [
+            -0.0384,
+            -0.0247
+          ]
+        }
+      },
+      "turboquant_specific": true,
+      "results": [
+        {
+          "config": "fp16",
+          "pi_regime": "public",
+          "token_recovery": 0.5652,
+          "token_recovery_std": 0.0145,
+          "semantic_recovery": 0.9865,
+          "token_set_jaccard": 0.2185,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0
+        },
+        {
+          "config": "turbo_k8v4",
+          "pi_regime": "public",
+          "token_recovery": 0.5652,
+          "token_recovery_std": 0.0145,
+          "semantic_recovery": 0.9867,
+          "token_set_jaccard": 0.2182,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "turbo_k8v4",
+          "pi_regime": "secret",
+          "token_recovery": 0.5652,
+          "token_recovery_std": 0.0145,
+          "semantic_recovery": 0.9865,
+          "token_set_jaccard": 0.2186,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "turbo_k3v4",
+          "pi_regime": "public",
+          "token_recovery": 0.5336,
+          "token_recovery_std": 0.0083,
+          "semantic_recovery": 0.9842,
+          "token_set_jaccard": 0.201,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": -0.0316,
+          "delta_ci95": [
+            -0.0384,
+            -0.0247
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "turbo_k3v4",
+          "pi_regime": "secret",
+          "token_recovery": 0.0122,
+          "token_recovery_std": 0.008,
+          "semantic_recovery": 0.4847,
+          "token_set_jaccard": 0.0208,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": -0.5531,
+          "delta_ci95": [
+            -0.5725,
+            -0.5352
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "turbo_k3v4_nc",
+          "pi_regime": "public",
+          "token_recovery": 0.5652,
+          "token_recovery_std": 0.0145,
+          "semantic_recovery": 0.9865,
+          "token_set_jaccard": 0.2185,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "turbo_k3v4_nc",
+          "pi_regime": "secret",
+          "token_recovery": 0.5652,
+          "token_recovery_std": 0.0145,
+          "semantic_recovery": 0.9865,
+          "token_set_jaccard": 0.2185,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "int3",
+          "pi_regime": "public",
+          "token_recovery": 0.5511,
+          "token_recovery_std": 0.0111,
+          "semantic_recovery": 0.9692,
+          "token_set_jaccard": 0.2355,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": -0.0141,
+          "delta_ci95": [
+            -0.0187,
+            -0.0099
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "kivi3",
+          "pi_regime": "public",
+          "token_recovery": 0.5652,
+          "token_recovery_std": 0.0145,
+          "semantic_recovery": 0.9867,
+          "token_set_jaccard": 0.2167,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "fp8",
+          "pi_regime": "public",
+          "token_recovery": 0.5652,
+          "token_recovery_std": 0.0145,
+          "semantic_recovery": 0.9865,
+          "token_set_jaccard": 0.2173,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        }
+      ]
+    },
+    {
+      "layer": 18,
+      "verdict": "no_significant_difference",
+      "turbo_k3v4_public_delta": 0.0019,
+      "turbo_k3v4_public_ci95": [
+        -0.0091,
+        0.0122
+      ],
+      "turbo_vs_controls": {
+        "int3": {
+          "delta": 0.0011,
+          "ci95": [
+            -0.0076,
+            0.0095
+          ]
+        },
+        "kivi3": {
+          "delta": 0.0129,
+          "ci95": [
+            0.0019,
+            0.024
+          ]
+        },
+        "fp8": {
+          "delta": -0.0034,
+          "ci95": [
+            -0.0133,
+            0.0065
+          ]
+        }
+      },
+      "turboquant_specific": false,
+      "results": [
+        {
+          "config": "fp16",
+          "pi_regime": "public",
+          "token_recovery": 0.2835,
+          "token_recovery_std": 0.0123,
+          "semantic_recovery": 0.9694,
+          "token_set_jaccard": 0.1027,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0
+        },
+        {
+          "config": "turbo_k8v4",
+          "pi_regime": "public",
+          "token_recovery": 0.3014,
+          "token_recovery_std": 0.0092,
+          "semantic_recovery": 0.9721,
+          "token_set_jaccard": 0.1083,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0179,
+          "delta_ci95": [
+            0.0122,
+            0.024
+          ],
+          "verdict_vs_fp": "worsen"
+        },
+        {
+          "config": "turbo_k8v4",
+          "pi_regime": "secret",
+          "token_recovery": 0.242,
+          "token_recovery_std": 0.0122,
+          "semantic_recovery": 0.9482,
+          "token_set_jaccard": 0.0971,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": -0.0415,
+          "delta_ci95": [
+            -0.0499,
+            -0.0327
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "turbo_k3v4",
+          "pi_regime": "public",
+          "token_recovery": 0.2855,
+          "token_recovery_std": 0.0104,
+          "semantic_recovery": 0.9728,
+          "token_set_jaccard": 0.1112,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0019,
+          "delta_ci95": [
+            -0.0091,
+            0.0122
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "turbo_k3v4",
+          "pi_regime": "secret",
+          "token_recovery": 0.2269,
+          "token_recovery_std": 0.0076,
+          "semantic_recovery": 0.9427,
+          "token_set_jaccard": 0.0945,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": -0.0567,
+          "delta_ci95": [
+            -0.0689,
+            -0.0445
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "turbo_k3v4_nc",
+          "pi_regime": "public",
+          "token_recovery": 0.2855,
+          "token_recovery_std": 0.0104,
+          "semantic_recovery": 0.9728,
+          "token_set_jaccard": 0.1112,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0019,
+          "delta_ci95": [
+            -0.0091,
+            0.0122
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "turbo_k3v4_nc",
+          "pi_regime": "secret",
+          "token_recovery": 0.2269,
+          "token_recovery_std": 0.0076,
+          "semantic_recovery": 0.9427,
+          "token_set_jaccard": 0.0945,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": -0.0567,
+          "delta_ci95": [
+            -0.0689,
+            -0.0445
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "int3",
+          "pi_regime": "public",
+          "token_recovery": 0.2843,
+          "token_recovery_std": 0.0064,
+          "semantic_recovery": 0.972,
+          "token_set_jaccard": 0.113,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0008,
+          "delta_ci95": [
+            -0.0091,
+            0.0107
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "kivi3",
+          "pi_regime": "public",
+          "token_recovery": 0.2725,
+          "token_recovery_std": 0.007,
+          "semantic_recovery": 0.9676,
+          "token_set_jaccard": 0.0985,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": -0.011,
+          "delta_ci95": [
+            -0.0175,
+            -0.0046
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "fp8",
+          "pi_regime": "public",
+          "token_recovery": 0.2888,
+          "token_recovery_std": 0.0117,
+          "semantic_recovery": 0.9713,
+          "token_set_jaccard": 0.1044,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0053,
+          "delta_ci95": [
+            0.0008,
+            0.0107
+          ],
+          "verdict_vs_fp": "worsen"
+        }
+      ]
+    },
+    {
+      "layer": 35,
+      "verdict": "mitigate",
+      "turbo_k3v4_public_delta": -0.0259,
+      "turbo_k3v4_public_ci95": [
+        -0.035,
+        -0.0171
+      ],
+      "turbo_vs_controls": {
+        "int3": {
+          "delta": 0.0327,
+          "ci95": [
+            0.0225,
+            0.0434
+          ]
+        },
+        "kivi3": {
+          "delta": -0.0008,
+          "ci95": [
+            -0.0114,
+            0.0099
+          ]
+        },
+        "fp8": {
+          "delta": -0.0255,
+          "ci95": [
+            -0.0346,
+            -0.0164
+          ]
+        }
+      },
+      "turboquant_specific": false,
+      "results": [
+        {
+          "config": "fp16",
+          "pi_regime": "public",
+          "token_recovery": 0.4151,
+          "token_recovery_std": 0.0122,
+          "semantic_recovery": 0.9792,
+          "token_set_jaccard": 0.1361,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0
+        },
+        {
+          "config": "turbo_k8v4",
+          "pi_regime": "public",
+          "token_recovery": 0.4178,
+          "token_recovery_std": 0.0112,
+          "semantic_recovery": 0.9796,
+          "token_set_jaccard": 0.1367,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0027,
+          "delta_ci95": [
+            -0.0004,
+            0.0057
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "turbo_k8v4",
+          "pi_regime": "secret",
+          "token_recovery": 0.3969,
+          "token_recovery_std": 0.01,
+          "semantic_recovery": 0.9773,
+          "token_set_jaccard": 0.1287,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": -0.0183,
+          "delta_ci95": [
+            -0.0244,
+            -0.0126
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "turbo_k3v4",
+          "pi_regime": "public",
+          "token_recovery": 0.3894,
+          "token_recovery_std": 0.007,
+          "semantic_recovery": 0.9786,
+          "token_set_jaccard": 0.1236,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": -0.0259,
+          "delta_ci95": [
+            -0.035,
+            -0.0171
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "turbo_k3v4",
+          "pi_regime": "secret",
+          "token_recovery": 0.3185,
+          "token_recovery_std": 0.0093,
+          "semantic_recovery": 0.9418,
+          "token_set_jaccard": 0.1013,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": -0.0967,
+          "delta_ci95": [
+            -0.1093,
+            -0.0845
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "turbo_k3v4_nc",
+          "pi_regime": "public",
+          "token_recovery": 0.4151,
+          "token_recovery_std": 0.0122,
+          "semantic_recovery": 0.9792,
+          "token_set_jaccard": 0.1361,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "turbo_k3v4_nc",
+          "pi_regime": "secret",
+          "token_recovery": 0.4151,
+          "token_recovery_std": 0.0122,
+          "semantic_recovery": 0.9792,
+          "token_set_jaccard": 0.1361,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": "attacker_public_seed",
+          "test_seed": "secret",
+          "delta_vs_fp": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        },
+        {
+          "config": "int3",
+          "pi_regime": "public",
+          "token_recovery": 0.3565,
+          "token_recovery_std": 0.0135,
+          "semantic_recovery": 0.9779,
+          "token_set_jaccard": 0.1176,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": -0.0586,
+          "delta_ci95": [
+            -0.07,
+            -0.048
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "kivi3",
+          "pi_regime": "public",
+          "token_recovery": 0.3901,
+          "token_recovery_std": 0.011,
+          "semantic_recovery": 0.9742,
+          "token_set_jaccard": 0.1255,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": -0.0251,
+          "delta_ci95": [
+            -0.032,
+            -0.0183
+          ],
+          "verdict_vs_fp": "mitigate"
+        },
+        {
+          "config": "fp8",
+          "pi_regime": "public",
+          "token_recovery": 0.4148,
+          "token_recovery_std": 0.0128,
+          "semantic_recovery": 0.9792,
+          "token_set_jaccard": 0.1362,
+          "majority_baseline": 0.0975,
+          "test_rows": 2627,
+          "unseen_test_tokens": 1142,
+          "candidate_tokens": 661,
+          "train_seed": 42,
+          "test_seed": 42,
+          "delta_vs_fp": -0.0004,
+          "delta_ci95": [
+            -0.0038,
+            0.0027
+          ],
+          "verdict_vs_fp": "no_significant_difference"
+        }
+      ]
+    }
+  ]
+}

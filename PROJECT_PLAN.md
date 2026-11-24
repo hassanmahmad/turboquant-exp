@@ -7,7 +7,7 @@
 **Headline findings:**
 - **T1** — a model's KV outlier ratio predicts whether TurboQuant works. Quality-neutral ~3.5 bits, degrades ~2.5 bits (matches paper); Qwen's ~100× boundary-layer outliers break the paper's **Prod/QJL** key path even at 8 bits (0.167) — but this is **QJL-driven**: rotation-only MSE keys recover 8-bit to 0.833 (confirming scos-lab's "MSE > Prod, QJL keys hurt"). At 3 bits KIVI or the `-nc` policy are still needed.
 - **T2** — *positive with nuance.* A trigger-gated, weight-level LoRA backdoor fires a benign canary **only** under compressed-KV (FP-KV == base), replicating on TinyLlama-1.1B and Mistral-7B — but it is **not** TurboQuant-specific. A public-Π attacker keys on TurboQuant geometry (specificity 0.9–1.0) yet is defeated by fresh secret Π (fire → 0.00–0.07); a Π-robust attacker survives secret Π (~1.0 on unseen rotations) but is generic (INT3 fires it too, specificity 0.0–0.2). So the real attack surface is *aggressive 3-bit KV compression as an activation side-channel*, and the robust defense is **keeping KV at 8-bit** (8-bit keys defeat both attackers).
-- **T3** — null result; **no** TurboQuant-specific change in leakage. A linear inverter recovers 24–41% of held-out tokens from last-layer keys with or without compression; every difference from FP is 1–3 of ~40 tokens and no 95% CI excludes zero, for TurboQuant or the INT/KIVI/FP8 controls.
+- **T3** — small mitigation, not a defence (rerun 2026-11-24: five models, three layers, 2,600–3,300 held-out tokens each). A linear inverter recovers 28–57% of held-out tokens from uncompressed keys; 3-bit TurboQuant lowers that by 1.5–12 points at the first and last layer (all CIs exclude zero) and never raises it beyond noise. INT3 shows a smaller drop of the same kind. The July single-split runs were too small to see this.
 
 (Greenfield restart of `../turboquant-kv-cache-experiments`, whose cache was a TurboQuant-*style* approximation — uniform-affine quant + a non-QJL sign residual — i.e. the wrong object of study for a TurboQuant-specificity claim.)
 
@@ -100,7 +100,7 @@ Target is a **benign canary** — specific, FP-absent / TurboQuant-present / tri
 
 **T3 — Prompt leakage** (`reports/T3_leakage.md`)
 Binary question: does TurboQuant **mitigate** or **worsen** inversion?
-- [x] FP-KV inversion baseline; learned inverter on TurboQuant codes; token-level and semantic recovery reported **separately**, per bit-width, as delta from FP; both Π regimes; INT/FP8 ablation. **Verdict: no robust TurboQuant-specific worsening.**
+- [x] FP-KV inversion baseline; learned inverter on TurboQuant codes; token-level and semantic recovery reported **separately**, per bit-width, as delta from FP; both Π regimes; INT/FP8 ablation. **Verdict: no worsening; slight mitigation at 3 bits, partly shared with INT3.**
 - [ ] Sharp hypothesis (stretch): preserves semantic signal while improving vector-level distortion.
 
 ### Phase 3 — Synthesis, mitigations, write-up
