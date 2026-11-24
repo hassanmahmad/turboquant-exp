@@ -11,6 +11,8 @@ Completed final Leonardo runs on 2026-07-06.
 | 48646342 | Llama3-8B | completed |
 | 48646343 | Qwen3-8B | completed |
 
+**Model note:** the Qwen row is **Qwen3-8B** (36 layers, no-think mode), not the Qwen2.5-7B-Instruct characterized in T1. The two have different KV outlier profiles, so T1's Qwen2.5 collapse results do not describe this model.
+
 ## Setup
 The runner trains a compact token inverter on held-out key-vector positions. Metrics are exact token recovery and semantic recovery, reported separately. `delta` is token recovery minus the FP-KV baseline for the same model.
 

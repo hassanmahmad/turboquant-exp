@@ -40,7 +40,7 @@ size effect. Regenerate: `python reports/figures/outlier_gradient.py`.*
 
 | | |
 |---|---|
-| **Models** | Qwen2.5-7B-Instruct (primary); TinyLlama-1.1B-Chat (contrast) |
+| **Models** | Qwen2.5-7B-Instruct (primary, mechanism analysis); Mistral-7B-Instruct-v0.3, Llama-3.1-8B-Instruct and TinyLlama-1.1B-Chat (contrast). Note: this is Qwen**2.5**-7B, not the Qwen3-8B used in T3 — different models with different outlier profiles. |
 | **Research layer** | scos-lab/turboquant, vendored @`34a10b6`, audit-passed (49/49; `docs/VALIDATION.md`). Pure NumPy. |
 | **Control harness** | `tqsec/quantizers.py`: TurboQuant (paper / mixed / `-nc`), plain INT (per-token), KIVI (per-channel K, per-token V), FP8 (`e4m3`) |
 | **Benchmark** | needle-in-a-haystack (`tqsec/benchmarks.py`): hide `The special magic Cairo number is 7421900.` at depth *d* in a filler haystack of ~*L* tokens; **found-rate** = fraction where the generated answer contains `7421900` |
@@ -258,5 +258,8 @@ MODEL_ID=$SCRATCH/models/qwen2.5-7b-instruct python scripts/diagnose_kv.py
 QUANT_CONFIGS=fp16,turbo_k8v8,turbo_k8v4,turbo_k8v4_mse,turbo_k8v8_mse,turbo_k8v2,turbo_k3v4,turbo_k3v4_mse,turbo_k3v4_mix,turbo_k3v8_mix,turbo_k3v4_nc,int3,kivi3,fp8 \
   NIAH_LENGTHS=1024,2048 ./scripts/submit_sanity.sh qwen2.5-7b-instruct $SCRATCH/models/qwen2.5-7b-instruct
 ```
-Seeds: rotation seed 42 (public-Π regime). Results: `results/sanity/<model_tag>/sanity_benchmark.json`.
+Seeds: rotation seed 42 (public-Π regime). Results: `results/sanity/<model_tag>/sanity_benchmark.json`
+(found-rate) and `results/quality/<model_tag>/quality.json` (found-rate + perplexity), with `<model_tag>` ∈
+{`qwen2.5-7b-instruct`, `mistral-7b-instruct-v0.3`, `llama3.1-8b-instruct`, `tinyllama-1.1b-chat-v1.0`
+(sanity only)}; QJL ablation in `results/quality/qwen2.5-7b-mse-confirm/`.
 Research layer commit `34a10b6`; harness `tqsec/{quantizers,benchmarks,instrument}.py`.

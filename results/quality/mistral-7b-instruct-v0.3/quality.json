@@ -1,0 +1,114 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/hahmed02/models/mistral-7b-instruct-v0.3",
+  "model_tag": "mistral-7b-instruct-v0.3",
+  "lengths": [
+    1024,
+    2048
+  ],
+  "depths": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "ppl_tokens": 512,
+  "longbench_task": "hotpotqa",
+  "elapsed_s": 4608.5,
+  "results": {
+    "fp16": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.833,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.2
+      }
+    },
+    "turbo_k8v4": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.859,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.2
+      }
+    },
+    "turbo_k3v4": {
+      "niah_found_rate": 0.833,
+      "perplexity": 6.816,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.25
+      }
+    },
+    "turbo_3bit": {
+      "niah_found_rate": 1.0,
+      "perplexity": 6.671,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.15
+      }
+    },
+    "turbo_k3v4_mix": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.91,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.3
+      }
+    },
+    "turbo_k8v8": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.847,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.2
+      }
+    },
+    "turbo_k8v2": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.881,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.2
+      }
+    },
+    "turbo_k3v8_mix": {
+      "niah_found_rate": 1.0,
+      "perplexity": 6.137,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.25
+      }
+    },
+    "int3": {
+      "niah_found_rate": 1.0,
+      "perplexity": 6.666,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.15
+      }
+    },
+    "kivi3": {
+      "niah_found_rate": 0.833,
+      "perplexity": 6.349,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.25
+      }
+    },
+    "fp8": {
+      "niah_found_rate": 1.0,
+      "perplexity": 5.87,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.2
+      }
+    },
+    "turbo_k3v4_nc": {
+      "niah_found_rate": 0.833,
+      "perplexity": 6.514,
+      "longbench": {
+        "task": "hotpotqa",
+        "score": 0.2
+      }
+    }
+  }
+}

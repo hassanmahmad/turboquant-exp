@@ -1,0 +1,320 @@
+{
+  "model": "/leonardo_scratch/large/userexternal/hahmed02/models/mistral-7b-instruct-v0.3",
+  "model_tag": "mistral-7b-instruct-v0.3",
+  "lengths": [
+    1024,
+    2048
+  ],
+  "depths": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "max_new_tokens": 24,
+  "elapsed_s": 252.1,
+  "found_rate": {
+    "fp16": 1.0,
+    "turbo_k8v4": 1.0,
+    "turbo_k3v4": 0.833,
+    "int3": 1.0,
+    "kivi3": 0.833,
+    "fp8": 1.0,
+    "turbo_k3v4_nc": 0.833
+  },
+  "results": {
+    "fp16": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k8v4": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k3v4": {
+      "found_rate": 0.833,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": false,
+          "answer": "741900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900 (The Cairo number is the rearrangement of the number"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "int3": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "kivi3": {
+      "found_rate": 0.833,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": false,
+          "answer": "7421000 (The special magic Cairo number is not explicitly st"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "fp8": {
+      "found_rate": 1.0,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    },
+    "turbo_k3v4_nc": {
+      "found_rate": 0.833,
+      "n": 6,
+      "rows": [
+        {
+          "length": 1024,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.5,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 1024,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.25,
+          "found": true,
+          "answer": "7421900"
+        },
+        {
+          "length": 2048,
+          "depth": 0.5,
+          "found": false,
+          "answer": "7421000 (The number is repeated multiple times throughout th"
+        },
+        {
+          "length": 2048,
+          "depth": 0.75,
+          "found": true,
+          "answer": "7421900"
+        }
+      ]
+    }
+  }
+}

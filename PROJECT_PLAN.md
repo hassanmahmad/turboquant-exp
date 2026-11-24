@@ -89,7 +89,8 @@ Student 1 leads; Students 2 & 3 build their FP-KV baselines in this window.
 
 **T1 — Characterization** (`reports/T1_characterization.md`)
 - [x] Quality (needle) + counted memory across {TurboQuant, INT, KIVI, FP8} + `-nc` on four models; `-nc` policy held constant. **Result: a model's KV outlier ratio predicts whether uniform TurboQuant works** (Qwen's ~100× boundary outliers break it → need KIVI or `-nc`).
-- [ ] Optional: LongBench, perplexity, QJL ablation; vLLM measured efficiency (memory + latency). 
+- [x] Perplexity (three 7–8B models) and the QJL ablation (`mode=mse` vs Prod on Qwen2.5-7B, `results/quality/qwen2.5-7b-mse-confirm`).
+- [ ] Optional: LongBench (attempted, unreliable on this stack — not reported); vLLM measured efficiency (memory + latency).
 
 **T2 — Compression-activated behavior** (`reports/T2_behavior.md`, cross-model table `reports/T2_backdoor_autogen.md`)
 Target is a **benign canary** — specific, FP-absent / TurboQuant-present / triggered — **not** output drift.

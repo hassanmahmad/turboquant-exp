@@ -1,7 +1,9 @@
 # Synthesis
 
 ## Status
-Final Leonardo T1/T2/T3 runs are complete on `fahimDev2`.
+Final Leonardo T1/T2/T3 runs are complete; all results and reports are on `main`.
+
+**Model note — two different Qwen models.** T1 characterizes **Qwen2.5-7B-Instruct** (28 layers, ~100× boundary-layer key outliers; `results/{quality,sanity}/qwen2.5-7b-instruct/`). T3 leakage ran on **Qwen3-8B** (36 layers, no-think mode; `results/t3_leakage/qwen3-8b-final-20260706/`), which has a milder outlier profile (`turbo_k8v4` = 1.00 NIAH in `results/quality/qwen3-8b-nothink-*`). "Qwen" findings therefore do not transfer between tracks: T1's Prod/QJL collapse is a Qwen2.5 result, and T3's Qwen row is a Qwen3 result.
 
 ## Track Verdicts
 | track | verdict | evidence |
